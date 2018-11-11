@@ -1,0 +1,117 @@
+---
+title: "Rayshader Tests"
+author: "Kevin Stierhoff"
+date: "11/10/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r install-packages}
+# Install and load pacman (library management package)
+if (!require("pacman")) install.packages("pacman")
+
+# Install and load required packages from CRAN ---------------------------------
+pacman::p_load(tidyverse,raster,elevatr)
+
+# Install and load required packages from Github -------------------------------
+# rayshader
+pacman::p_load_gh("tylermorganwall/rayshader")
+```
+
+
+# Test 1
+
+http://www.tylermw.com/making-beautiful-maps/
+
+```{r}
+#Here, I load a map with the raster package:
+raster::raster(here("Data/dem_01.tif")) -> localtif
+# And convert it to a matrix:
+elmat <- matrix(raster::extract(localtif, raster::extent(localtif), buffer = 1000),
+  nrow = ncol(localtif), ncol = nrow(localtif)
+)
+
+# We use another one of rayshader's built-in textures:
+elmat %>%
+  sphere_shade(texture = "desert") %>%
+  plot_map()
+```
+
+```{r}
+ambmat = ambient_shade(elmat)
+raymat = ray_shade(elmat,lambert = TRUE)
+
+#detect_water and add_water adds a water layer to the map:
+elmat %>%
+  sphere_shade(texture = "desert") %>%
+  add_water(detect_water(elmat), color = "desert") %>%
+  plot_map()
+```
+
+```{r}
+#And we can add a raytraced layer from that sun direction as well:
+elmat %>%
+  sphere_shade(texture = "desert") %>%
+  add_water(detect_water(elmat), color = "desert") %>%
+  add_shadow(raymat,0.7) %>%
+  plot_map()
+```
+
+```{r}
+elmat %>%
+  sphere_shade(texture = "desert", progbar = FALSE) %>%
+  add_water(detect_water(elmat), color = "desert") %>%
+  add_shadow(ray_shade(elmat, zscale = 3, maxsearch = 300, progbar = FALSE), 0.7) %>%
+  add_shadow(ambmat, 0.7) %>%
+  plot_3d(elmat, zscale = 10, fov = 0, theta = 135, zoom = 0.9, phi = 45, windowsize = c(800, 800))
+```
+
+```{r}
+montshadow <- ray_shade(montereybay, zscale  = 50, lambert = FALSE)
+montamb    <- ambient_shade(montereybay, zscale = 50)
+montereybay %>%
+  sphere_shade(zscale = 10, texture = "imhof1") %>%
+  add_shadow(montshadow, 0.5) %>%
+  add_shadow(montamb) %>%
+  plot_3d(montereybay,
+    zscale = 50, fov = 0, theta = -45, phi = 45, windowsize = c(800, 800), zoom = 0.9,
+    water = TRUE, waterdepth = 0, wateralpha = 0.5, watercolor = "lightblue",
+    waterlinecolor = "white", waterlinealpha = 0.3
+  )
+```
+
+```{r}
+montereybay %>%
+  sphere_shade(zscale = 10, texture = "imhof1") %>%
+  add_shadow(montshadow, 0.5) %>%
+  add_shadow(montamb) %>%
+  plot_3d(montereybay,
+    zscale = 50, fov = 30, theta = 45, phi = 25, windowsize = c(800, 800), zoom = 0.4,
+    water = TRUE, waterdepth = 0, waterlinecolor = "white", waterlinealpha = 0.5,
+    wateralpha = 0.5, watercolor = "lightblue"
+  )
+render_depth(focus = 0.5)
+```
+
+# Test 2
+
+http://www.tylermw.com/3d-maps-with-rayshader/
+
+```{r}
+montereybay %>%
+  sphere_shade(texture = "bw") %>%
+  add_shadow(ray_shade(montereybay)) %>%
+  add_shadow(ambient_shade(montereybay)) %>%
+  plot_3d(solid = TRUE, shadow = TRUE, water = TRUE)
+```
+
+# Other links
+
+http://www.tylermw.com/category/r/
+
+
+
+
