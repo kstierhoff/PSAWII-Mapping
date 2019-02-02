@@ -3,6 +3,7 @@ title: "Introduction-Basic Mapping"
 author: "Kevin Stierhoff"
 date: '`r format(Sys.time(), format = "%F")`'
 output: ioslides_presentation
+logo: ../Images/noaa-logo.png
 ---
 
 ```{r setup, include=FALSE}
@@ -10,18 +11,61 @@ output: ioslides_presentation
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(knitr,here,emo)
+pacman::p_load(knitr,tidyverse,here,emo,bookdown)
 
-knitr::opts_chunk$set(echo = F)
+knitr::opts_chunk$set(message = F, fig.align = 'center')
 ```
 
-## Welcome!
-PSAW-II: Mapping and Spatial Analysis in R! 
+## Outline
 
-**About me:** 
++ What makes a map?
++ Let's make a map!
++ Base graphics
++ ggplot2
 
-+ Research Fisheries Biologist at NOAA's SWFSC (since 2008) 
-+ **Research interests:** Monitoring and recovery of endangered white abalone, assessment of small pelagic fishes, advanced survey technologies (optics and acoustics), data science and reproducible research 
-+ **R** user since 2009 (thanks Eric Archer and Jeff Laake!)
-+ **Esri ArcGIS** user since 1998 (v3.1!)...trying to quit 
+## What is a map?
 
+_**According to Wikipedia:**_
+
+A map is a symbolic depiction emphasizing relationships between elements of some space, such as objects, regions, or themes.  
+
+Many maps are static, fixed to paper or some other durable medium, while others are dynamic or interactive.  
+
+## Let's make a map
+
+Load some transect data from a survey of coastal pelagic fishes (CPS) off the west coast of the U.S. and Canada
+
+```{r,echo=T}
+# Read data file
+cps <- read_csv(here("Data/cps.csv")) 
+
+# Show first 10 rows
+head(cps, 5)
+```  
+
+## Let's make a map
+
+Create a **VERY** basic map using base graphics (`r emo::ji("sick")`)
+
+```{r,echo=T}
+# Plot lat/long
+plot(cps$long, cps$lat)
+```  
+
+## Let's make a (slightly better) map
+
+The same **VERY** basic map using ggplot2 (still `r emo::ji("sick")`)
+
+```{r,echo=T}
+# Plot lat/long
+ggplot(cps, aes(long, lat)) + geom_point()
+``` 
+
+## Let's make a (barely acceptable) map
+
+The same **VERY** basic ggplot2 map with some tweaks (still `r emo::ji("sick")`)
+
+```{r,echo=T}
+# Plot lat/long
+ggplot(cps, aes(long, lat)) + geom_point() + coord_map() + theme_bw()
+```

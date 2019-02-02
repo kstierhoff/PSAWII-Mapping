@@ -2,7 +2,13 @@
 title: "Overview-PSAW-II: Mapping and Spatial Analysis in R!"
 author: "Kevin Stierhoff"
 date: '`r format(Sys.time(), format = "%F")`'
-output: ioslides_presentation
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    nature:
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
 ---
 
 ```{r setup, include=FALSE}
@@ -10,7 +16,7 @@ output: ioslides_presentation
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(knitr,here,emo)
+pacman::p_load(xaringan,knitr,here,emo)
 
 knitr::opts_chunk$set(echo = F)
 ```
@@ -25,6 +31,8 @@ PSAW-II: Mapping and Spatial Analysis in R!
 + **R** user since 2009 (thanks Eric Archer and Jeff Laake!)
 + **Esri ArcGIS** user since 1998 (v3.1!)...trying to quit 
 
+---
+
 ## Course Motivation
 I had long been frustrated that mapping and other GIS-type tasks were the only part of my analysis and writing workflow that existed outside of R. 
 
@@ -34,17 +42,19 @@ With my desire to move toward more automated and reproducible workflows, it was 
 
 This course arose from a brief, 1 h-long R-User Group meeting in 2018, where I presented some things I had learned about mapping and spatial analysis using R.  
 
+---
+
 ## Course Materials
 All of the course materials are available via Github at https://github.com/kstierhoff/PSAWII-Mapping. 
 
 **If(Git)**, in Rstudio:
 File>New Project>Version Control>Git and paste the link above into the Repository URL field.
 
-**If(!Git)**, download the .zip file, extract the contents, and then open the PSAWII-Mapping.Rproj file.  
+**If(!Git)**, download the .zip file, extract the contents, and then open the PSAWII-Mapping.Rproj file.
 
-```{r,fig.align='center'}
-include_graphics(here("Images/git-zip.png"))
-```
+![](Images/git-zip.png) 
+
+---
 
 ## Guiding Principles
 There are many ways to accomplish mapping and spatial analysis tasks using R (e.g., `sp` package, the [R-ArcGIS Bridge](https://r-arcgis.github.io/)).  
@@ -54,7 +64,9 @@ I will focus on the prevailing workflows and packages used by the leaders in the
 + Rstudio IDE and Rstudio Projects for analysis and organization, respectively 
 + `tidyverse` packages for data manipulation (e.g., `dplyr`) and visualization (e.g., `ggplot2`) 
 + `sf` package for creation, manipulation, and plotting of spatial data 
-+ `mapview` and `leaflet` for interactive data exploration 
++ `mapview` and `leaflet` for interactive data exploration
+
+---
 
 ## Survey Feedback
 From the Google Survey, the groups' skills and interests could be summarized as: 
@@ -65,6 +77,8 @@ From the Google Survey, the groups' skills and interests could be summarized as:
 + **Most Interested:** Basic mapping, tables, datums/projections, spatial/geometry operations 
 + **Less interested:** Interactive maps, animations, 3D maps 
 + **Not listed:** Animal movements, species distribution modeling, trade-offs
+
+---
 
 ## Survey Feedback (cont.)
 There were several concerns:  
@@ -77,12 +91,16 @@ There were several concerns:
 
 _And think of all the spare time you'll have to `r emo::ji("surfer")` once you optimize your R-GIS analysis workflow!_ 
 
+---
+
 ## Course Structure
 The class will be structured into several modules:
 
 + **01-Introduction:** Basic mapping and data visualization (50%)
 + **02-Intermediate:** Spatial data manipulation and analysis (35%)
-+ **03-Advanced:** Interactive maps, animations, and 3D visualization (15%)  
++ **03-Advanced:** Interactive maps, animations, and 3D visualization (15%) 
+
+---
 
 ## Software requirements
 + R (v3+; v3.5.2 preferred) 
@@ -100,17 +118,17 @@ pacman::p_load(ggplot2, dplyr, dplyr)
 _**Mac users: **_ You should install `gdal` before installing the `sf` package following the instructions here:  
 https://r-spatial.github.io/sf/
 
+---
+
 ## Valuable Resources
 + The various help pages, vignettes, and articles for the [`sf` package](https://r-spatial.github.io/sf/index.html)
 + [Geocomputation with R](https://geocompr.robinlovelace.net/) eBook by Lovelace, Nowsad, and Muenchow, for the most comprehensive treatment of, well, geocomputation using R
 + [R for Data Science](https://r4ds.had.co.nz/) eBook by Grolemund and Wickam for a wealth of info on data analysis, relying heavily on Tidyverse packages 
 + [Fundamentals of Data Visualization](https://serialmentor.com/dataviz/) eBook by Wilke for everything dataviz
-+ #rstats/#rspatial **Twitter**: @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others  
++ \#rstats/\#rspatial **Twitter**: @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others 
 
----  
+---
 
-**Onward, let's make some maps!**  
+## Onward, let's make some maps!
 
-```{r,fig.align='center'}
-include_graphics(here("Images/earth.jpg"))
-```
+![](Images/earth.jpg) 
