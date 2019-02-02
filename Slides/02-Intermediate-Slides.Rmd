@@ -1,0 +1,27 @@
+---
+title: "Intermediate-Manipulating and Analyzing Spatial Data"
+author: "Kevin Stierhoff"
+date: '`r format(Sys.time(), format = "%F")`'
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+# Install and load pacman (library management package)
+if (!require("pacman")) install.packages("pacman")
+
+# Install and load required packages from CRAN ----
+pacman::p_load(knitr,here,emo)
+
+knitr::opts_chunk$set(echo = F)
+```
+
+## Welcome!
+PSAW-II: Mapping and Spatial Analysis in R! 
+
+**About me:** 
+
++ Research Fisheries Biologist at NOAA's SWFSC (since 2008) 
++ **Research interests:** Monitoring and recovery of endangered white abalone, assessment of small pelagic fishes, advanced survey technologies (optics and acoustics), data science and reproducible research 
++ **R** user since 2009 (thanks Eric Archer and Jeff Laake!)
++ **Esri ArcGIS** user since 1998 (v3.1!)...trying to quit 
+

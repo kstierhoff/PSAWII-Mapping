@@ -1,0 +1,24 @@
+---
+title: "Advanced-Interaction, Animation, and 3D (maybe)"
+author: "Kevin Stierhoff"
+date: '`r format(Sys.time(), format = "%F")`'
+output: 
+  bookdown::html_document2:
+      toc: yes
+      toc_float: yes
+---
+
+```{r setup, message=F}
+# Install and load pacman (library management package)
+if (!require("pacman")) install.packages("pacman")
+
+# Install and load required packages from CRAN ---------------------------------
+pacman::p_load(tidyverse,knitr,here,devtools,bookdown,bookdownplus)
+
+# Install and load required packages from Github -------------------------------
+
+
+# Set default knitr chunk options
+knitr::opts_chunk$set(warning = F, message = F, dev = "png", dev.args = list(type = "cairo"))  
+```
+
