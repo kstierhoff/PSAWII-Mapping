@@ -1,11 +1,13 @@
 ---
-title: "Overview-PSAW-II: Mapping and Spatial Analysis in R!"
+title: "Overview-PSAW II: Mapping and Spatial Analysis in R!"
 author: "Kevin Stierhoff"
 date: '`r format(Sys.time(), format = "%F")`'
 output:
   xaringan::moon_reader:
+    css: ["default","css/css-slides.css"]
     lib_dir: libs
     nature:
+      ratio: 16:9
       highlightStyle: github
       highlightLines: true
       countIncrementalSlides: false
@@ -28,7 +30,7 @@ PSAW-II: Mapping and Spatial Analysis in R!
 
 + Research Fisheries Biologist at NOAA's SWFSC (since 2008) 
 + **Research interests:** Monitoring and recovery of endangered white abalone, assessment of small pelagic fishes, advanced survey technologies (optics and acoustics), data science and reproducible research 
-+ **R** user since 2009 (thanks Eric Archer and Jeff Laake!)
++ **R** user since 2009 (thanks to Eric Archer and Jeff Laake, among others)
 + **Esri ArcGIS** user since 1998 (v3.1!)...trying to quit 
 
 ---
@@ -41,6 +43,11 @@ ArcGIS is (IMHO) expensive, cumbersome, and not-necessarily cross-platform. I RE
 With my desire to move toward more automated and reproducible workflows, it was imperative for me to learn the tools available to accomplish these same tasks in R.  
 
 This course arose from a brief, 1 h-long R-User Group meeting in 2018, where I presented some things I had learned about mapping and spatial analysis using R.  
+
+### Disclaimer(!):
+I am **NOT** an expert in GIS or R, an expert in spatial analysis, nor a cartographer.
+
+I **AM** pretty good with R, have learned a LOT about making maps in R, and am **extremely** enthusiastic about eliminating the need for proprietary, stand-alone GIS software in my workflow!
 
 ---
 
@@ -57,7 +64,7 @@ File>New Project>Version Control>Git and paste the link above into the Repositor
 ---
 
 ## Guiding Principles
-There are many ways to accomplish mapping and spatial analysis tasks using R (e.g., `sp` package, the [R-ArcGIS Bridge](https://r-arcgis.github.io/)).  
+There are many ways to accomplish mapping and spatial analysis tasks using R (e.g., `sp` package, [`RQGIS` package](https://cran.r-project.org/web/packages/RQGIS/index.html), the [R-ArcGIS Bridge](https://r-arcgis.github.io/)).  
 
 I will focus on the prevailing workflows and packages used by the leaders in the R and R Spatial communities, including:
 
@@ -103,8 +110,8 @@ The class will be structured into several modules:
 ---
 
 ## Software requirements
-+ R (v3+; v3.5.2 preferred) 
-+ Rstudio (v1.1+' v1.1.4 preferred) 
++ R (v3+, v3.5.2 preferred) 
++ Rstudio (v1.1+, v1.1.4 preferred) 
 + Required packages will be installed, loaded, or updated (if necessary) using the `pacman` package. 
 
 ```{r, echo=T, message=F}
@@ -120,12 +127,24 @@ https://r-spatial.github.io/sf/
 
 ---
 
-## Valuable Resources
+## Resources and Examples
+### Resources
++ The [Analysis of Spatial Data](http://cran.stat.ucla.edu/web/views/Spatial.html) and [Handling and Analyzing Spatio-Temporal Data](https://cran.r-project.org/web/views/SpatioTemporal.html) Task Views on CRAN
 + The various help pages, vignettes, and articles for the [`sf` package](https://r-spatial.github.io/sf/index.html)
 + [Geocomputation with R](https://geocompr.robinlovelace.net/) eBook by Lovelace, Nowsad, and Muenchow, for the most comprehensive treatment of, well, geocomputation using R
 + [R for Data Science](https://r4ds.had.co.nz/) eBook by Grolemund and Wickam for a wealth of info on data analysis, relying heavily on Tidyverse packages 
 + [Fundamentals of Data Visualization](https://serialmentor.com/dataviz/) eBook by Wilke for everything dataviz
-+ \#rstats/\#rspatial **Twitter**: @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others 
+
+--
+
+### Blogs, Wikis, etc.
++ [Introduction to GIS with R](https://www.jessesadler.com/post/gis-with-r-intro/) and [An Exploration of Simple Features (sf) with R](https://www.jessesadler.com/post/simple-feature-objects/)
++ Drawing beautiful maps programmatically wiht R, sf, and ggplot2: [Part 1](https://www.r-spatial.org//r/2018/10/25/ggplot2-sf.html), [Part 2](https://www.r-spatial.org//r/2018/10/25/ggplot2-sf-2.html), and [Part 3](https://www.r-spatial.org//r/2018/10/25/ggplot2-sf-3.html)
+
+---
+## Resources and Examples (cont'd)
+### Social media (seriously)
++ \#rstats/\#rspatial **Twitter**: @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others
 
 ---
 

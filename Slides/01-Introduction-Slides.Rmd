@@ -2,8 +2,15 @@
 title: "Introduction-Basic Mapping"
 author: "Kevin Stierhoff"
 date: '`r format(Sys.time(), format = "%F")`'
-output: ioslides_presentation
-logo: ../Images/noaa-logo.png
+output:
+  xaringan::moon_reader:
+    css: ["default","css/css-slides.css"]
+    lib_dir: libs
+    nature:
+      ratio: 16:9
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
 ---
 
 ```{r setup, include=FALSE}
@@ -11,9 +18,22 @@ logo: ../Images/noaa-logo.png
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(knitr,tidyverse,here,emo,bookdown)
+pacman::p_load(xaringan,knitr,tidyverse,here,emo,
+               rnaturalearth,rnaturalearthdata,marmap)
 
-knitr::opts_chunk$set(message = F, fig.align = 'center')
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = F, fig.align = 'center',
+                      fig.dim = c(6.5, 6.1), fig.retina = 2, 
+                      out.height = "100%")
+knitr::opts_hooks$set(fig.callout = function(options) {
+  if (options$fig.callout) {
+    options$echo <- FALSE
+    options$out.height <- "99%"
+    options$fig.width <- 16
+    options$fig.height <- 8
+  }
+  options
+})
 ```
 
 ## Outline
@@ -23,6 +43,8 @@ knitr::opts_chunk$set(message = F, fig.align = 'center')
 + Base graphics
 + ggplot2
 
+---
+
 ## What is a map?
 
 _**According to Wikipedia:**_
@@ -31,41 +53,238 @@ A map is a symbolic depiction emphasizing relationships between elements of some
 
 Many maps are static, fixed to paper or some other durable medium, while others are dynamic or interactive.  
 
-## Let's make a map
+---
+
+## Let's load some spatial data
 
 Load some transect data from a survey of coastal pelagic fishes (CPS) off the west coast of the U.S. and Canada
 
 ```{r,echo=T}
 # Read data file
-cps <- read_csv(here("Data/cps.csv")) 
+cps <- read_csv(here("Data/cps.csv")) %>% 
+  select(transect, interval, everything())
 
 # Show first 10 rows
 head(cps, 5)
 ```  
 
+- `transect` and `interval` constitute a unique measurement
+- `long` and `lat` are (x,y)
+- `nasc` (Nautical Area Scattering Coefficient) ~ "acoustic biomass"
+
+---
+
 ## Let's make a map
 
-Create a **VERY** basic map using base graphics (`r emo::ji("sick")`)
+Create a **VERY** basic map using **base** graphics (`r emo::ji("sick")`)
 
-```{r,echo=T}
+.left-code[
+```{r plot1-code,eval=F}
 # Plot lat/long
 plot(cps$long, cps$lat)
-```  
+``` 
+]
+
+.right-plot[
+```{r plot1-output,ref.label="plot1-code",echo=F}
+``` 
+]
+
+---
 
 ## Let's make a (slightly better) map
 
-The same **VERY** basic map using ggplot2 (still `r emo::ji("sick")`)
+The same **VERY** basic map using **ggplot2** (still `r emo::ji("sick")`)
 
-```{r,echo=T}
+.left-code[
+```{r plot2-code,eval=F}
 # Plot lat/long
-ggplot(cps, aes(long, lat)) + geom_point()
+ggplot(cps, aes(long, lat)) +
+  geom_point()
+```
+]
+
+.right-plot[
+```{r plot2-output,ref.label="plot2-code",echo=F}
 ``` 
+]
+
+---
 
 ## Let's make a (barely acceptable) map
 
-The same **VERY** basic ggplot2 map with some tweaks (still `r emo::ji("sick")`)
-
-```{r,echo=T}
+The same **VERY** basic ggplot2 map with some basic ggplot2 tweaks (still `r emo::ji("sick")`)
+.left-code[
+```{r plot3-code,eval=F}
 # Plot lat/long
-ggplot(cps, aes(long, lat)) + geom_point() + coord_map() + theme_bw()
+ggplot(cps, aes(long, lat)) +
+  geom_point() +
+  # Change axis labels
+  xlab("Longitude") + #<<
+  ylab("Latitude") +  #<<
+  # Use map coords
+  coord_map() + #<< 
+  # Use b/w theme
+  theme_bw()    #<< 
 ```
+]
+
+.right-plot[
+```{r plot3-output,ref.label="plot3-code",echo=F}
+``` 
+]
+
+---
+
+## Let's make a better (barely acceptable) map
+
+The same map with some useful info (`r emo::ji("meh")`)
+
+.left-code[
+```{r plot4-code,eval=F}
+# Subset locations
+locs <- read_csv( #<<
+  here("Data/locations.csv")) #<<
+
+# Plot lat/long
+ggplot(cps, aes(long, lat)) +
+  geom_point() +
+  xlab("Longitude") + 
+  ylab("Latitude") +
+  # Use map coordinates
+  coord_map() +
+  # Use b/w theme
+  theme_bw() +
+  # Add locations
+  geom_text(data = locs, #<< 
+            aes(long, lat, #<<
+                label = name)) #<<
+```
+]
+
+.right-plot[
+```{r plot4-output,ref.label="plot4-code",echo=F}
+``` 
+]
+
+---
+
+## OK, one more (mostly) terrible map
+
+The same map with some useful info (`r emo::ji("meh")`)
+
+.left-code[
+```{r plot5-code,eval=F}
+# Import locations
+locs <- locs %>% #<<
+  filter(group == "state") #<<
+
+# Plot lat/long
+ggplot(cps, aes(long, lat)) +
+  # Scale points by size
+  geom_point(aes(size = nasc)) + #<<
+  xlab("Longitude") + 
+  ylab("Latitude") +
+  coord_map() + 
+  theme_bw() +
+  geom_text(data = locs,
+            aes(long, lat, 
+                label = name),
+            hjust = 1)
+```
+]
+
+.right-plot[
+```{r plot5-output,ref.label="plot5-code",echo=F}
+``` 
+]
+
+---
+## Importing land data (`rnaturalearth`)
+- Acquiring good land mass information is often a challenge
+- rnaturalearth is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and scales ("low", "medium", "high"; high requires installation of `rnaturalearthhires`)
+
+.left-code[
+```{r plot6-code,eval=F}
+# Download worldwide countries 
+# at medium resolution
+world <- ne_countries(
+  scale = "medium", 
+  returnclass = "sf")
+
+# Plot result
+ggplot(data = world) +
+  geom_sf() +
+  theme_bw()
+```
+]
+
+.right-plot[
+```{r plot6-output,ref.label="plot6-code",echo=F}
+``` 
+]
+
+---
+## Importing land data (`rnaturalearth`)
+
+```{r plot7-code,eval=F}
+ggplot(data = world) +
+  # Symbolize polygons by continent
+  geom_sf(aes(fill = continent)) + #<<
+  theme_bw()
+```
+
+```{r plot7-output,ref.label="plot7-code",fig.dim = c(9,6),echo=F}
+``` 
+
+---
+## Download West Coast of the North America
+
+.left-code[
+```{r plot8-code,eval=F}
+# Download worldwide states 
+# and filter for Western N. Am.
+states <- ne_states(
+  country = c("Canada",
+              "United States of America",
+              "Mexico"),
+  returnclass = 'sf') %>% 
+  filter(name %in% c("California","Oregon","Washington",
+                     "British Columbia",
+                     "Baja California",
+                    "Baja California Sur"))
+
+# Plot result
+ggplot(data = states) +
+  geom_sf() +
+  theme_bw()
+```
+]
+
+.right-plot[
+```{r plot8-output,ref.label="plot8-code",echo=F}
+``` 
+]
+
+---
+## Zoom to the West Coast of the U.S.
+
+```{r}
+
+```
+
+---
+## Zoom to the West Coast of the U.S.
+
+```{r}
+
+```
+
+---
+
+## Review of topics covered
+- Basic plotting of X,Y data (boring!) using `ggplot2`
+- Getting and plotting land feature data
+- Getting and plotting bathymetry data
+- Creating a base map
+- Faceting 

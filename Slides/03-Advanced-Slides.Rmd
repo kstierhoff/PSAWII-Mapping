@@ -2,7 +2,15 @@
 title: "Advanced-Interaction, Animation, and 3D (maybe)"
 author: "Kevin Stierhoff"
 date: '`r format(Sys.time(), format = "%F")`'
-output: ioslides_presentation
+output:
+  xaringan::moon_reader:
+    css: ["default","css/css-slides.css"]
+    lib_dir: libs
+    nature:
+      ratio: 16:9
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
 ---
 
 ```{r setup, include=FALSE}
@@ -10,9 +18,21 @@ output: ioslides_presentation
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(knitr,here,emo)
+pacman::p_load(xaringan,knitr,here,emo)
 
-knitr::opts_chunk$set(echo = F)
+options(htmltools.dir.version = FALSE)
+knitr::opts_chunk$set(message = F, fig.align = 'center',
+                      fig.dim = c(6.5, 6.1), fig.retina = 2, 
+                      out.height = "100%")
+knitr::opts_hooks$set(fig.callout = function(options) {
+  if (options$fig.callout) {
+    options$echo <- FALSE
+    options$out.height <- "99%"
+    options$fig.width <- 16
+    options$fig.height <- 8
+  }
+  options
+})
 ```
 
 ## Welcome!
