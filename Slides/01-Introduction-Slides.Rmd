@@ -19,10 +19,12 @@ if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
 pacman::p_load(xaringan,knitr,tidyverse,here,emo,
-               rnaturalearth,rnaturalearthdata,marmap)
+               rnaturalearth,rnaturalearthdata,marmap,
+               ggmap,ggrepel,shadowtext,cowplot, ggspatial)
 
 options(htmltools.dir.version = FALSE)
-knitr::opts_chunk$set(message = F, fig.align = 'center',
+knitr::opts_chunk$set(message = F, warning = F,
+                      fig.align = 'center',
                       fig.dim = c(6.5, 6.1), fig.retina = 2, 
                       out.height = "100%")
 knitr::opts_hooks$set(fig.callout = function(options) {
@@ -171,26 +173,24 @@ ggplot(cps, aes(long, lat)) +
 
 ## OK, one more (mostly) terrible map
 
-The same map with some useful info (`r emo::ji("meh")`)
+The same map with some place names and an equal area projection (`r emo::ji("meh")`)
 
 .left-code[
 ```{r plot5-code,eval=F}
-# Import locations
-locs <- locs %>% #<<
-  filter(group == "state") #<<
-
 # Plot lat/long
 ggplot(cps, aes(long, lat)) +
   # Scale points by size
   geom_point(aes(size = nasc)) + #<<
   xlab("Longitude") + 
   ylab("Latitude") +
-  coord_map() + 
+  coord_map(projection = 'azequalarea') + #<< 
   theme_bw() +
-  geom_text(data = locs,
-            aes(long, lat, 
-                label = name),
-            hjust = 1)
+  geom_text(data = #<<
+              filter(locs, 
+                     group == "state"), #<<
+            aes(long, lat, #<<
+                label = name),#<<
+            hjust = 1)#<<
 ```
 ]
 
@@ -200,12 +200,109 @@ ggplot(cps, aes(long, lat)) +
 ]
 
 ---
-## Importing land data (`rnaturalearth`)
-- Acquiring good land mass information is often a challenge
-- rnaturalearth is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and scales ("low", "medium", "high"; high requires installation of `rnaturalearthhires`)
+
+## Mapping packages using online servers
+The [`ggmap`](https://github.com/dkahle/ggmap) package is an excellent package that allows you to quickly create a map without using any land shapefiles.  
+
+The Google Maps API has recently changed their use policies, which has made the Google Maps option a little tricky, but it's manageable.
 
 .left-code[
 ```{r plot6-code,eval=F}
+# Define lat and long range
+wc.lat  <- range(cps$lat)
+wc.long <- range(cps$long)
+
+# Set west coast boundaries for stamen maps
+stamen.bounds <- c(left = min(wc.long), 
+                   bottom = min(wc.lat),
+                   right = max(wc.long), 
+                   top = max(wc.lat))
+
+# Download stamen map of west coast; zoom = 6 seems good
+stamen.map <- ggmap(get_stamenmap(
+  stamen.bounds, zoom = 6, 
+  maptype = "toner-lite")) +
+  xlab("Longitude") + ylab("Latitude") +
+  theme_bw()
+
+# Plot the map
+stamen.map
+```
+]
+
+.right-plot[
+```{r plot6-output,ref.label="plot6-code",echo=F}
+``` 
+]
+
+---
+
+## Mapping packages using online servers
+Add the CPS transects to the stamen map
+
+.left-code[
+```{r plot7-code,eval=F}
+# Add transects and CPS backscatter
+cps.prelim <- stamen.map +
+  geom_path(data = cps, #<<
+            aes(long, lat, #<<
+                group = transect)) + #<<
+  geom_point(data = filter(cps, nasc > 0), #<<
+             aes(long, lat, size = nasc)) #<<
+
+# Plot map
+cps.prelim
+```
+]
+
+.right-plot[
+```{r plot7-output,ref.label="plot7-code",echo=F}
+``` 
+]
+
+---
+## Mapping packages using online servers
+Add some frills to the map
+
+.left-code[
+```{r plot8-code,eval=F}
+# Add some repelled labels
+cps.final1 <- cps.prelim +
+  geom_text_repel(
+    data = filter(locs, group == "city"),
+    aes(long, lat, label = name)) +
+  theme(legend.position = "none")
+
+# Add some masked labels
+cps.final2 <- cps.prelim +
+  geom_shadowtext(
+    data = filter(locs, group == "city"),
+    aes(long, lat, label = name),
+    colour = "blue",
+    bg.colour = "yellow") +
+  theme(legend.position = "none")
+
+# Plot map
+cowplot::plot_grid(cps.final1, 
+                   cps.final2, 
+                   nrow = 1)
+```
+]
+
+.right-plot[
+```{r plot8-output,ref.label="plot8-code",echo=F}
+``` 
+]
+
+---
+
+## Importing land data (`rnaturalearth`)
+Acquiring good land mass information is often a challenge 
+
+`rnaturalearth` is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and scales ("low", "medium", "high"; high requires installation of `rnaturalearthhires`)
+
+.left-code[
+```{r plot9-code,eval=F}
 # Download worldwide countries 
 # at medium resolution
 world <- ne_countries(
@@ -220,28 +317,28 @@ ggplot(data = world) +
 ]
 
 .right-plot[
-```{r plot6-output,ref.label="plot6-code",echo=F}
+```{r plot9-output,ref.label="plot9-code",echo=F}
 ``` 
 ]
 
 ---
 ## Importing land data (`rnaturalearth`)
 
-```{r plot7-code,eval=F}
+```{r plot10-code,eval=F}
 ggplot(data = world) +
   # Symbolize polygons by continent
   geom_sf(aes(fill = continent)) + #<<
   theme_bw()
 ```
 
-```{r plot7-output,ref.label="plot7-code",fig.dim = c(9,6),echo=F}
+```{r plot10-output,ref.label="plot10-code",fig.dim = c(9,6),echo=F}
 ``` 
 
 ---
 ## Download West Coast of the North America
 
 .left-code[
-```{r plot8-code,eval=F}
+```{r plot11-code,eval=F}
 # Download worldwide states 
 # and filter for Western N. Am.
 states <- ne_states(
@@ -249,10 +346,11 @@ states <- ne_states(
               "United States of America",
               "Mexico"),
   returnclass = 'sf') %>% 
-  filter(name %in% c("California","Oregon","Washington",
+  filter(name %in% c("California","Oregon",
+                     "Washington",
                      "British Columbia",
                      "Baja California",
-                    "Baja California Sur"))
+                     "Baja California Sur"))
 
 # Plot result
 ggplot(data = states) +
@@ -262,7 +360,7 @@ ggplot(data = states) +
 ]
 
 .right-plot[
-```{r plot8-output,ref.label="plot8-code",echo=F}
+```{r plot11-output,ref.label="plot11-code",echo=F}
 ``` 
 ]
 
