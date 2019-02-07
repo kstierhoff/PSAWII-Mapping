@@ -294,7 +294,7 @@ cps.prelim
 
 ---
 ## Map Server APIs
-Add some more info to the map (obviously not "good" maps)
+Add some more info to the map (obviously not "good" maps) using `ggrepel` and `shadowtext`
 
 .left-code[
 ```{r plot8-code,eval=F}
@@ -363,26 +363,22 @@ ggplot(data = world) +
 
 ---
 
-background-image: url(figs/geometries.png)
-background-size: 300px
-background-position: 50% 100%
+background-image: url(images/geometries.png)
+background-size: 500px
+background-position: 50% 90%
 
 ## What are [simple features](https://r-spatial.github.io/sf/articles/sf1.html)?
 
-- Until now we've been working with data frames with no explicit spatial attributes
-
-- Most location data are from a GPS and have latitude/longitude coordinates in of the WGS84 datum
+- Until now we've been working with data frames with no explicit spatial attributes, but commonly spatial data are from a GPS and have latitude/longitude coordinates in of the WGS84 datum
 
 - The standard says: _“A simple feature is defined by the OpenGIS Abstract specification to have both **spatial** and **non-spatial** attributes. Spatial attributes are geometry valued, and simple features are based on 2D geometry with linear interpolation between vertices.”_
 
-???
-
-- Geometry types: (MULTI)POINT, (MULTI)LINESTRING, (MULTI)POLYGON, GEOMETRYCOLLECTION
+- Simple features are the equivalent of a shapefile in GIS, but self-contained
 
 ---
 
 ## Simple features: Attributes
-- geometry type: POINT, POLYGON, etc.
+- geometry type: POINT, POLYLINE POLYGON, etc.
 - epsg: Coordinate Reference System (CRS, datum and projection; more later) 
 - proj4string: Notation used by R from the PROJ.4 `gdal` library
 
