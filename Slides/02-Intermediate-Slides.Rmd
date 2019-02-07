@@ -1,6 +1,6 @@
 ---
-title: "Intermediate-Manipulating and Analyzing Spatial Data"
-author: "Kevin Stierhoff"
+title: "Mapping and Spatial Analysis in R!"
+subtitle: "Part 2-Manipulating and Analyzing Spatial Data"
 date: '`r format(Sys.time(), format = "%F")`'
 output:
   xaringan::moon_reader:

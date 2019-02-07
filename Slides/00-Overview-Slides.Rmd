@@ -1,5 +1,5 @@
 ---
-title: "PSAW II: Mapping and Spatial Analysis in R!"
+title: "Mapping and Spatial Analysis in R!"
 subtitle: "Part 1-Overview"
 author: "Kevin Stierhoff <br /> <br /> NOAA Fisheries <br /> Southwest Fisheries Science Center"
 date: '`r format(Sys.time(), format = "%F")`'
@@ -184,6 +184,12 @@ https://r-spatial.github.io/sf/
 + \#rstats/\#rspatial **Twitter**: @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others
 
 ---
+
+background-image: url(images/tweet.png)
+background-size: 800px
+background-position: 50% 50%
+
+---
 class: center, middle
 
 # A few examples
@@ -210,7 +216,7 @@ background-image: url(images/example-leaflet.png)
 background-size: 700px
 background-position: 50% 70% 
 
-An interactive map Acoustic Trawl Survey data using **[`Leaflet`](https://swfscdata.nmfs.noaa.gov/AST/ATMap/interactive_explorer.HTML)** 
+An [interactive map](https://swfscdata.nmfs.noaa.gov/AST/ATMap/interactive_explorer.HTML)** of Acoustic Trawl Survey data using `Leaflet` 
 
 ---
 ## Onward, let's make some maps!

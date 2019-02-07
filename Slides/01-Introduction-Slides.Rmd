@@ -1,6 +1,6 @@
 ---
-title: "Introduction-Basic Mapping"
-author: "Kevin Stierhoff"
+title: "Mapping and Spatial Analysis in R!"
+subtitle: "Part 1-Basic Mapping"
 date: '`r format(Sys.time(), format = "%F")`'
 output:
   xaringan::moon_reader:
@@ -18,9 +18,10 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(xaringan,knitr,tidyverse,here,emo,
+pacman::p_load(xaringan,knitr,tidyverse,here,emo,sf,
                rnaturalearth,rnaturalearthdata,marmap,
-               ggmap,ggrepel,shadowtext,cowplot, ggspatial)
+               ggmap,ggrepel,shadowtext,cowplot, ggspatial,
+               viridis,plotly)
 
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(message = F, warning = F,
@@ -38,28 +39,37 @@ knitr::opts_hooks$set(fig.callout = function(options) {
 })
 ```
 
-## Outline
-
-+ What makes a map?
-+ Let's make a map!
-+ Base graphics
-+ ggplot2
-
----
+background-image: url(images/map.jpg)
+background-size: 600px
+background-position: 50% 80%
 
 ## What is a map?
 
-_**According to Wikipedia:**_
-
-A map is a symbolic depiction emphasizing relationships between elements of some space, such as objects, regions, or themes.  
-
-Many maps are static, fixed to paper or some other durable medium, while others are dynamic or interactive.  
+_**From Wikipedia:**_ A map is a symbolic depiction emphasizing relationships between elements of some space, such as objects, regions, or themes. Many maps are static, fixed to paper or some other durable medium, while others are dynamic or interactive.  
 
 ---
 
-## Let's load some spatial data
+background-image: url(images/crayon-map.jpg)
+background-size: 400px
+background-position: 50% 80%
 
-Load some transect data from a survey of coastal pelagic fishes (CPS) off the west coast of the U.S. and Canada
+## Why spend time making nice maps?
+
+_"Amateur-looking maps can undermine your audience’s ability to understand important information and weaken the presentation of a professional data investigation."_  
+
+- Lovelace et al. _Geocomputation with R_
+
+---
+class: center, middle
+
+# Static maps: Basic data exploration
+
+## `base` graphics and `ggplot2`
+
+---
+
+## Let's load some data to map
+Transect data from an acoustic-trawl method (ATM) survey of coastal pelagic fishes (CPS) off the west coast of the U.S. and Canada
 
 ```{r,echo=T}
 # Read data file
@@ -78,13 +88,14 @@ head(cps, 5)
 
 ## Let's make a map
 
-Create a **VERY** basic map using **base** graphics (`r emo::ji("sick")`)
+Create a **VERY** basic map using **base** graphics (`r emo::ji("sick")`)  
 
 .left-code[
 ```{r plot1-code,eval=F}
 # Plot lat/long
 plot(cps$long, cps$lat)
 ``` 
+
 ]
 
 .right-plot[
@@ -92,11 +103,21 @@ plot(cps$long, cps$lat)
 ``` 
 ]
 
+???
+
+What's wrong with it?
+
+- Cartesian coordinates (spatially inaccurate)
+- No reference points
+- Aesthetics (axis labels, gridlines, etc.)
+
 ---
 
 ## Let's make a (slightly better) map
 
 The same **VERY** basic map using **ggplot2** (still `r emo::ji("sick")`)
+
+Same problems as above, but I prefer `ggplot2` (`r emo::ji("wink")`)
 
 .left-code[
 ```{r plot2-code,eval=F}
@@ -115,7 +136,8 @@ ggplot(cps, aes(long, lat)) +
 
 ## Let's make a (barely acceptable) map
 
-The same **VERY** basic ggplot2 map with some basic ggplot2 tweaks (still `r emo::ji("sick")`)
+The same **VERY** basic ggplot2 map with some basic ggplot2 tweaks (still `r emo::ji("sick")`)  
+
 .left-code[
 ```{r plot3-code,eval=F}
 # Plot lat/long
@@ -140,7 +162,7 @@ ggplot(cps, aes(long, lat)) +
 
 ## Let's make a better (barely acceptable) map
 
-The same map with some useful info (`r emo::ji("meh")`)
+The same map with some place names added (`r emo::ji("meh")`)
 
 .left-code[
 ```{r plot4-code,eval=F}
@@ -173,7 +195,7 @@ ggplot(cps, aes(long, lat)) +
 
 ## OK, one more (mostly) terrible map
 
-The same map with some place names and an equal area projection (`r emo::ji("meh")`)
+The same map with fewer place names, scaled points, and an equal area projection (`r emo::ji("meh")`)
 
 .left-code[
 ```{r plot5-code,eval=F}
@@ -185,12 +207,12 @@ ggplot(cps, aes(long, lat)) +
   ylab("Latitude") +
   coord_map(projection = 'azequalarea') + #<< 
   theme_bw() +
-  geom_text(data = #<<
-              filter(locs, 
+  geom_text(data = 
+              filter(locs, #<<
                      group == "state"), #<<
-            aes(long, lat, #<<
-                label = name),#<<
-            hjust = 1)#<<
+            aes(long, lat, 
+                label = name),
+            hjust = 1)
 ```
 ]
 
@@ -200,11 +222,16 @@ ggplot(cps, aes(long, lat)) +
 ]
 
 ---
+class: center, middle
 
-## Mapping packages using online servers
-The [`ggmap`](https://github.com/dkahle/ggmap) package is an excellent package that allows you to quickly create a map without using any land shapefiles.  
+# Static maps: Map server APIs
 
-The Google Maps API has recently changed their use policies, which has made the Google Maps option a little tricky, but it's manageable.
+## "Canned" maps using `ggmap`
+
+---
+
+## Map Server APIs
+The [`ggmap`](https://github.com/dkahle/ggmap) package is an excellent package for `ggplot2`-friendly maps using Google Maps, Open Street Maps, Stamen Application Programming Interfaces (APIs). To use Google Maps, you must now [configure a Google Maps API key](https://github.com/dkahle/ggmap). 
 
 .left-code[
 ```{r plot6-code,eval=F}
@@ -212,13 +239,13 @@ The Google Maps API has recently changed their use policies, which has made the 
 wc.lat  <- range(cps$lat)
 wc.long <- range(cps$long)
 
-# Set west coast boundaries for stamen maps
+# Set west coast boundaries
 stamen.bounds <- c(left = min(wc.long), 
                    bottom = min(wc.lat),
                    right = max(wc.long), 
                    top = max(wc.lat))
 
-# Download stamen map of west coast; zoom = 6 seems good
+# Download stamen map of west coast
 stamen.map <- ggmap(get_stamenmap(
   stamen.bounds, zoom = 6, 
   maptype = "toner-lite")) +
@@ -237,7 +264,7 @@ stamen.map
 
 ---
 
-## Mapping packages using online servers
+## Map Server APIs
 Add the CPS transects to the stamen map
 
 .left-code[
@@ -245,10 +272,15 @@ Add the CPS transects to the stamen map
 # Add transects and CPS backscatter
 cps.prelim <- stamen.map +
   geom_path(data = cps, #<<
-            aes(long, lat, #<<
-                group = transect)) + #<<
+            aes(long, lat, 
+                group = transect)) +
   geom_point(data = filter(cps, nasc > 0), #<<
-             aes(long, lat, size = nasc)) #<<
+             aes(long, lat, 
+                 size = nasc, 
+                 colour = nasc)) + 
+  guides(colour = guide_legend(), #<<
+         size = guide_legend()) #<<
+  
 
 # Plot map
 cps.prelim
@@ -261,21 +293,21 @@ cps.prelim
 ]
 
 ---
-## Mapping packages using online servers
-Add some frills to the map
+## Map Server APIs
+Add some more info to the map (obviously not "good" maps)
 
 .left-code[
 ```{r plot8-code,eval=F}
-# Add some repelled labels
+# Add repelled labels
 cps.final1 <- cps.prelim +
-  geom_text_repel(
+  ggrepel::geom_text_repel( #<<
     data = filter(locs, group == "city"),
     aes(long, lat, label = name)) +
   theme(legend.position = "none")
 
-# Add some masked labels
+# Add masked labels
 cps.final2 <- cps.prelim +
-  geom_shadowtext(
+  shadowtext::geom_shadowtext( #<<
     data = filter(locs, group == "city"),
     aes(long, lat, label = name),
     colour = "blue",
@@ -296,10 +328,18 @@ cowplot::plot_grid(cps.final1,
 
 ---
 
-## Importing land data (`rnaturalearth`)
-Acquiring good land mass information is often a challenge 
+class: center, middle
 
-`rnaturalearth` is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and scales ("low", "medium", "high"; high requires installation of `rnaturalearthhires`)
+# Static maps: Roll-your-own
+
+## `ggplot2`, `sf`, and helpers
+
+---
+
+## Land Feature Data (`rnaturalearth`)
+Acquiring good land feature data is often a challenge. `rnaturalearth` is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and scales ("low", "medium", "high"; high requires installation of `rnaturalearthhires`).
+
+Import data as spatial (`sp`) or simple feature (`sf`) object (we'll choose `sf`).
 
 .left-code[
 ```{r plot9-code,eval=F}
@@ -307,7 +347,7 @@ Acquiring good land mass information is often a challenge
 # at medium resolution
 world <- ne_countries(
   scale = "medium", 
-  returnclass = "sf")
+  returnclass = "sf") #<<
 
 # Plot result
 ggplot(data = world) +
@@ -322,7 +362,57 @@ ggplot(data = world) +
 ]
 
 ---
-## Importing land data (`rnaturalearth`)
+
+background-image: url(figs/geometries.png)
+background-size: 300px
+background-position: 50% 100%
+
+## What are [simple features](https://r-spatial.github.io/sf/articles/sf1.html)?
+
+- Until now we've been working with data frames with no explicit spatial attributes
+
+- Most location data are from a GPS and have latitude/longitude coordinates in of the WGS84 datum
+
+- The standard says: _“A simple feature is defined by the OpenGIS Abstract specification to have both **spatial** and **non-spatial** attributes. Spatial attributes are geometry valued, and simple features are based on 2D geometry with linear interpolation between vertices.”_
+
+???
+
+- Geometry types: (MULTI)POINT, (MULTI)LINESTRING, (MULTI)POLYGON, GEOMETRYCOLLECTION
+
+---
+
+## Simple features: Attributes
+- geometry type: POINT, POLYGON, etc.
+- epsg: Coordinate Reference System (CRS, datum and projection; more later) 
+- proj4string: Notation used by R from the PROJ.4 `gdal` library
+
+A good explanation about CRS in R can be found [here](https://www.nceas.ucsb.edu/~frazier/RSpatialGuides/OverviewCoordinateReferenceSystems.pdf).  
+
+```{r}
+# Subset world data
+world %>% 
+  filter(name %in% c("Canada", "Mexico", "United States of America")) %>%
+  select("name","pop_est","gdp_md_est") %>% 
+  arrange(name)
+```
+
+The geometry is abbreviated, but you can view it completely by printing
+
+```{r}
+st_geometry(world)[[1]]
+```
+
+---
+## Simple features: Methods
+Buffer (st_buffer), Spatial subsetting (st_intersection, st_difference), Casting (st_cast), Area calculations (st_area)
+
+```{r}
+methods(class = "sf")
+```
+
+
+---
+## Land Feature Data (`rnaturalearth`)
 
 ```{r plot10-code,eval=F}
 ggplot(data = world) +
@@ -335,7 +425,7 @@ ggplot(data = world) +
 ``` 
 
 ---
-## Download West Coast of the North America
+## Survey area data
 
 .left-code[
 ```{r plot11-code,eval=F}
@@ -347,7 +437,7 @@ states <- ne_states(
               "Mexico"),
   returnclass = 'sf') %>% 
   filter(name %in% c("California","Oregon",
-                     "Washington",
+                     "Washington","Nevada",
                      "British Columbia",
                      "Baja California",
                      "Baja California Sur"))
@@ -365,24 +455,124 @@ ggplot(data = states) +
 ]
 
 ---
-## Zoom to the West Coast of the U.S.
+## Survey area base map
+
+.left-code[
+```{r plot12-code,eval=F}
+# Place labels
+locs.sub <- locs %>% 
+  filter(name %in% c("Cape Flattery","Columbia River",
+                     "Cape Mendocino","Point Conception"))
+
+# Create base map
+base.map <- ggplot() +
+  geom_sf(data = states) +
+  geom_shadowtext(data = locs.sub,
+                  aes(long, lat, label = name),
+                  colour = "black", 
+                  bg.colour = "white",
+                  hjust = 0, angle = 45) +
+  xlab("Longitude") +
+  ylab("Latitude") + 
+  annotation_scale(location = "bl", 
+                   width_hint = 0.5) +
+  coord_sf(xlim = wc.long,
+           ylim = wc.lat) +
+  theme_bw()
+
+base.map
+```
+]
+
+.right-plot[
+```{r plot12-output,ref.label="plot12-code",echo=F}
+``` 
+]
+
+---
+
+## Add final data layers
+
+.left-code[
+```{r plot13-code,fig.height='8in',eval=F}
+# Create base map
+base.map + 
+  geom_path(data = cps,
+            aes(long, lat,
+                group = transect),
+            colour = "gray50") +
+  geom_point(data = filter(cps, nasc > 0),
+            aes(long, lat,
+                size = nasc,
+                colour = nasc)) +
+  scale_colour_viridis(option = "inferno") + #<<
+  guides(colour = guide_legend(), 
+         size = guide_legend()) +
+  theme(legend.position = c(0.05,0.05), #<<
+        legend.justification = c(0,0)) + #<<
+  ggtitle("CPS Backscatter") #<<
+```
+]
+
+.right-plot[
+```{r plot13-output,ref.label="plot13-code",echo=F}
+``` 
+]
+
+---
+
+background-image: url(figs/basic-map-example.png)
+background-size: 300px
+background-position: 100% 50%
+
+## Save using `ggsave()` and view
+
+.pull-left[
+```{r}
+# File type dictated by
+# extension (e.g., .jpg, .png, .pdf) 
+ggsave(here("Slides/figs/basic-map-example.png"),
+       height = 10,
+       width = 5)
+```
+]
+
+---
+
+## Faceting
+Easily create multipanel figures using ggplot on factors (i.e., groups) 
 
 ```{r}
+# Classify data by latitude
+cps <- cps %>% 
+  mutate(
+    stock = case_when(
+      lat > 45 ~ "North",
+      between(lat, 43, 45) ~ "Central",
+      TRUE ~ "South"))
 
+# View top 5 rows
+head(cps, 5)
 ```
 
 ---
-## Zoom to the West Coast of the U.S.
 
-```{r}
+## Faceting
 
+```{r,fig.height='6in'}
+# Plot CPS backscatter by "stock"
+base.map + 
+  geom_point(data = cps,
+             aes(long, lat, colour = stock)) +
+  facet_wrap(~stock, nrow = 1) +
+  scale_colour_discrete("Stock")
+
+ggsave(here("Slides/figs/facet-map.png"),
+       height = 10, width = 5*3)
 ```
 
 ---
 
-## Review of topics covered
-- Basic plotting of X,Y data (boring!) using `ggplot2`
-- Getting and plotting land feature data
-- Getting and plotting bathymetry data
-- Creating a base map
-- Faceting 
+background-image: url(figs/facet-map.png)
+background-size: 900px
+background-position: 50% 50%

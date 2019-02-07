@@ -1,6 +1,6 @@
 ---
-title: "Advanced-Interaction, Animation, and 3D (maybe)"
-author: "Kevin Stierhoff"
+title: "Mapping and Spatial Analysis in R!"
+subtitle: "Part 3-Interaction, Animation, etc."
 date: '`r format(Sys.time(), format = "%F")`'
 output:
   xaringan::moon_reader:
@@ -18,7 +18,7 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(xaringan,knitr,here,emo)
+pacman::p_load(xaringan,knitr,here,emo,leaflet,mapview)
 
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(message = F, fig.align = 'center',
@@ -35,13 +35,13 @@ knitr::opts_hooks$set(fig.callout = function(options) {
 })
 ```
 
-## Welcome!
-PSAW-II: Mapping and Spatial Analysis in R! 
+### `Leaflet` maps
 
-**About me:** 
+```{r,out.width='8in',out.height='4in',fig.align='center'}
+# The SWFSC
+leaflet() %>% addTiles() %>% addProviderTiles(providers$Esri.OceanBasemap) %>% setView(-117.2512, 32.8707, zoom = 17)
+```  
 
-+ Research Fisheries Biologist at NOAA's SWFSC (since 2008) 
-+ **Research interests:** Monitoring and recovery of endangered white abalone, assessment of small pelagic fishes, advanced survey technologies (optics and acoustics), data science and reproducible research 
-+ **R** user since 2009 (thanks Eric Archer and Jeff Laake!)
-+ **Esri ArcGIS** user since 1998 (v3.1!)...trying to quit 
+[Leaflet Provider Tile Gallery](http://leaflet-extras.github.io/leaflet-providers/preview/index.html)
+
 
