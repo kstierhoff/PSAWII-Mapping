@@ -18,7 +18,10 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(xaringan,knitr,here,emo,leaflet,mapview)
+pacman::p_load(xaringan,knitr,here,emo,leaflet,mapview,
+               gganimate,sf,dplyr,ggplot2)
+
+pacman::p_load_gh("hadley/emo")
 
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(message = F, fig.align = 'center',
@@ -37,7 +40,7 @@ knitr::opts_hooks$set(fig.callout = function(options) {
 
 ### `Leaflet` maps
 
-```{r,out.width='8in',out.height='4in',fig.align='center'}
+```{r,out.width='8in',out.height='70%',out.width='100%'}
 # The SWFSC
 leaflet() %>% addTiles() %>% addProviderTiles(providers$Esri.OceanBasemap) %>% setView(-117.2512, 32.8707, zoom = 17)
 ```  

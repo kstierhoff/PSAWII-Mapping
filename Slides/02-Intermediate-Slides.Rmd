@@ -19,7 +19,7 @@ if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
 pacman::p_load(xaringan,knitr,here,tidyverse,sf,
-               rnaturalearth)
+               rnaturalearth,mapview)
 
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(message = F, fig.align = 'center',
@@ -97,7 +97,7 @@ sp.to.sf <- st_as_sf(sp)
 
 ---
 
-## Spatial data objects  
+## Spatial data objects: `sf`  
 
 - The `sf` package is all you really need to create, transform, read, and write spatial data files
 
@@ -118,9 +118,7 @@ We'll look at these in more depth throughout this section
 
 ---
 
-## Spatial data objects  
-
-Recall:
+## Methods for `sf` objects  
 
 ```{r}
 methods(class = "sf")
@@ -128,10 +126,11 @@ methods(class = "sf")
 
 ---
 
-## Create an `sf` object
+## Converting data.frames to `sf` objects
 
 .pull-left[
-Read our CPS backscatter data again and view it's contents
+
+Read our CPS backscatter data and view
 
 ```{r}
 # Read data file
@@ -146,7 +145,7 @@ cps
 --
 
 .pull-right[
-Convert data frame to a simple feature using `st_as_sf()`
+Convert data frame to `sf` using `st_as_sf()`
 
 ```{r}
 # Define coordinates and CRS
@@ -223,7 +222,7 @@ Perhaps if you'd like to write to a CSV, which doesn't support list-columns?
 
 ---
 
-## Viewing spatial objects (`base::print`)
+## Viewing `sf` objects: `base::print`
 `sf` objects have their own print methods, so you can have a visual summary using `print()`
 
 .pull-left[
@@ -250,10 +249,10 @@ plot(usa["region_sub"])
 
 ---
 
-## Viewing spatial objects (`ggplot2`)
+## Viewing `sf` objects: `ggplot2`
 Since `ggplot2` version 3.1, `sf` support by `geom_sf`
 
-```{r,out.height='100%'}
+```{r,fig.dim = c(7, 5)}
 # Plot using ggplot and WGS84
 ggplot(usa) + 
   geom_sf(aes(fill = region_sub)) +
@@ -262,10 +261,10 @@ ggplot(usa) +
 
 ---
 
-## Viewing spatial objects (`ggplot2`)
+## Viewing `sf` objects: `ggplot2`
 The magic of `coord_sf()` and projections
 
-```{r}
+```{r,fig.dim = c(7, 5)}
 laea = st_crs("+proj=laea +lat_0=30 +lon_0=-95") # Lambert equal area
 
 # Plot using ggplot
@@ -274,11 +273,24 @@ ggplot(usa) +
   coord_sf(crs = laea)
 ```
 
+---
+
+## Viewing `sf` objects (`mapview`)
+
+`mapview` is an extremely useful package for viewing spatial data
+
+```{r,out.width='100%',out.height='50%'}
+# View a single object
+mapview(usa, zcol = "region_sub")
+```
 
 ---
 
-## Viewing spatial objects (`mapview`)
+## Viewing `sf` objects (`mapview`)
 
+`mapview` is an extremely useful package for viewing spatial data
 
-
-
+```{r,out.width='100%',out.height='50%'}
+# View a single object
+mapview(usa)
+```

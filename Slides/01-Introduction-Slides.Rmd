@@ -18,10 +18,12 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(xaringan,knitr,tidyverse,here,emo,sf,
+pacman::p_load(xaringan,knitr,tidyverse,here,sf,
                rnaturalearth,rnaturalearthdata,marmap,
                ggmap,ggrepel,shadowtext,cowplot, ggspatial,
-               viridis,plotly)
+               viridis,plotly,mapproj)
+
+pacman::p_load_gh("hadley/emo")
 
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(message = F, warning = F,
@@ -388,19 +390,13 @@ A good explanation about CRS in R can be found [here](https://www.nceas.ucsb.edu
 # Subset world data
 world %>% 
   filter(name %in% c("Canada", "Mexico", "United States of America")) %>%
-  select("name","pop_est","gdp_md_est") %>% 
+  select("name", "pop_est", "gdp_md_est") %>% 
   arrange(name)
-```
-
-The geometry is abbreviated, but you can view it completely by printing
-
-```{r}
-st_geometry(world)[[1]]
 ```
 
 ---
 ## Simple features: Methods
-Buffer (st_buffer), Spatial subsetting (st_intersection, st_difference), Casting (st_cast), Area calculations (st_area)
+Buffer (`st_buffer`), spatial subsetting (`st_intersection`, `st_difference`), casting (`st_cast`), geometric measurements (`st_area`, `st_length`)
 
 ```{r}
 methods(class = "sf")

@@ -19,7 +19,9 @@ output:
 if (!require("pacman")) install.packages("pacman")
 
 # Install and load required packages from CRAN ----
-pacman::p_load(xaringan,knitr,here,emo)
+pacman::p_load(xaringan,knitr,here)
+
+pacman::p_load_gh("hadley/emo")
 
 knitr::opts_chunk$set(echo = F)
 ```
@@ -181,7 +183,10 @@ https://r-spatial.github.io/sf/
 --
 
 ### Social media (seriously)
-+ \#rstats/\#rspatial **Twitter**: @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others
++ Twitter
+  + \#rstats and \#rspatial
+  
+  + @hadleywickham, @edzerpebesma, @mdsumner, @ClausWilke, @robinlovlace, and many, many others
 
 ---
 
@@ -216,7 +221,7 @@ background-image: url(images/example-leaflet.png)
 background-size: 700px
 background-position: 50% 70% 
 
-An [interactive map](https://swfscdata.nmfs.noaa.gov/AST/ATMap/interactive_explorer.HTML)** of Acoustic Trawl Survey data using `Leaflet` 
+An **[interactive map](https://swfscdata.nmfs.noaa.gov/AST/ATMap/interactive_explorer.HTML)** of Acoustic Trawl Survey data using `Leaflet` 
 
 ---
 ## Onward, let's make some maps!
