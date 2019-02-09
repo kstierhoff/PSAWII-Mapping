@@ -290,7 +290,7 @@ mapview(usa, zcol = "region_sub")
 
 `mapview` is an extremely useful package for viewing spatial data
 
-```{r,out.width='100%',out.height='50%'}
+```{r,out.width='100%',out.height='50%',eval=F}
 # View a single object
 mapview(usa)
 ```
