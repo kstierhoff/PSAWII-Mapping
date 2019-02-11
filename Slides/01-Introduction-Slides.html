@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Mapping and Spatial Analysis in R!</title>
+    <meta charset="utf-8">
+    <meta name="date" content="2019-02-11" />
+    <link href="libs/remark-css/default.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css\css-slides.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Mapping and Spatial Analysis in R!
+## Part 1-Basic Mapping
+### 2019-02-11
+
+---
+
+
+
+
+background-image: url(images/map.jpg)
+background-size: 600px
+background-position: 50% 80%
+
+## What is a map?
+
+_**From Wikipedia:**_ A map is a symbolic depiction emphasizing relationships between elements of some space, such as objects, regions, or themes. Many maps are static, fixed to paper or some other durable medium, while others are dynamic or interactive.  
+
+---
+
+background-image: url(images/crayon-map.jpg)
+background-size: 400px
+background-position: 50% 80%
+
+## Why spend time making (nice) maps?
+_"You can see a lot by just looking"_ -Yogi Berra
+
+_"Amateur-looking maps can undermine your audience’s ability to understand important information and weaken the presentation of a professional data investigation."_  - Lovelace et al. (_Geocomputation with R_)
+
+---
+class: center, middle
+
+# Static maps: Basic data exploration
+
+## `base` graphics and `ggplot2`
+
+---
+
+## Let's load some data to map
+Transect data from an acoustic-trawl method (ATM) survey of small coastal pelagic fishes (CPS; e.g., sardines, anchovies, mackerel) off the west coast of the U.S. and Canada.
+
+
+```r
+# Read data file
+cps &lt;- read_csv(here("Data/cps.csv")) %&gt;% 
+  select(transect, interval, everything())
+
+# Show first 10 rows
+head(cps, 5)
+```
+
+```
+## # A tibble: 5 x 5
+##   transect interval  long   lat  nasc
+##      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+## 1        1        1 -121.  35.4     0
+## 2        1        2 -121.  35.4     0
+## 3        1        3 -121.  35.4     0
+## 4        1        4 -121.  35.4     0
+## 5        1        5 -121.  35.4     0
+```
+
+- `transect` and `interval` constitute a unique measurement
+- `long` and `lat` are (x,y)
+- `nasc` (Nautical Area Scattering Coefficient) ~ "acoustic biomass"
+
+---
+
+## Let's make a map
+
+Create a **VERY** basic map using **base** graphics (💊)  
+
+.left-code[
+
+```r
+# Plot lat/long
+plot(cps$long, cps$lat)
+```
+
+--
+
+**This is the one and only base graphics map you'll see, enjoy!**
+
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot1-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+???
+
+What's wrong with it?
+
+- Cartesian coordinates (spatially inaccurate)
+- No reference points
+- Aesthetics (axis labels, gridlines, etc.)
+
+---
+
+## Let's make a map with `ggplot2`
+
+The same **VERY** basic map using **ggplot2** (still 🤒)
+
+Same problems as above, but I prefer `ggplot2` (😉)
+
+.left-code[
+
+```r
+# Plot lat/long
+ggplot(cps, aes(long, lat)) +
+  geom_point()
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot2-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Let's make a (barely acceptable) map
+
+The same **VERY** basic ggplot2 map with some basic ggplot2 tweaks (still 😷)  
+
+.left-code[
+
+```r
+# Plot lat/long
+ggplot(cps, aes(long, lat)) +
+  geom_point() +
+  # Change axis labels
+* xlab("Longitude") +
+* ylab("Latitude") +
+  # Use map coords
+* coord_map() +
+  # Use b/w theme
+* theme_bw()
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot3-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Let's make a (slightly) better map
+
+The same map with some place names added (😒)
+
+.left-code[
+
+```r
+# Subset locations
+*locs &lt;- read_csv(
+* here("Data/locations.csv"))
+
+# Plot lat/long
+ggplot(cps, aes(long, lat)) +
+  geom_point() +
+  xlab("Longitude") + 
+  ylab("Latitude") +
+  # Use map coordinates
+  coord_map() +
+  # Use b/w theme
+  theme_bw() +
+  # Add locations
+* geom_text(data = locs,
+*           aes(long, lat,
+*               label = name))
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot4-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## OK, one more better but (mostly) terrible map
+
+The same map with fewer place names, scaled points, and an equal area projection (😐)
+
+.left-code[
+
+```r
+# Plot lat/long
+ggplot(cps, aes(long, lat)) +
+  # Scale points by size
+* geom_point(aes(size = nasc)) +
+  xlab("Longitude") + 
+  ylab("Latitude") +
+* coord_map(projection = 'azequalarea') +
+  theme_bw() +
+  geom_text(data = 
+*             filter(locs,
+*                    group == "state"),
+            aes(long, lat, 
+                label = name),
+            hjust = 1)
+```
+
+--
+
+For a preliminary exploratory data analysis (EDA), I think this is pretty adequate.  
+
+But with a little more work, we can do **A LOT** better.
+
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot5-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+class: center, middle
+
+# Static maps: Map server APIs
+
+## "Canned" maps using `ggmap`
+
+---
+
+## Map Server APIs
+[`ggmap`](https://github.com/dkahle/ggmap) makes `ggplot2`-friendly maps using Google Maps, OpenStreetMap, and Stamen Application Programming Interfaces (APIs). To use Google Maps, you must now [configure a Google Maps API key](https://github.com/dkahle/ggmap). All require an internet connection.
+
+.left-code[
+
+```r
+# Define lat and long range
+wc.lat  &lt;- range(cps$lat)
+wc.long &lt;- range(cps$long)
+
+# Set west coast boundaries
+stamen.bounds &lt;- c(left = min(wc.long), 
+                   bottom = min(wc.lat),
+                   right = max(wc.long), 
+                   top = max(wc.lat))
+
+# Download stamen map of west coast
+stamen.map &lt;- ggmap(get_stamenmap(
+  stamen.bounds, zoom = 6, 
+* maptype = "toner-lite")) +
+  xlab("Longitude") + ylab("Latitude") +
+  theme_bw()
+
+# Plot the map
+stamen.map
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot6-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Map Server APIs: `ggmap`
+Add the CPS transects to the stamen map
+
+.left-code[
+
+```r
+# Add transects and CPS backscatter
+cps.prelim &lt;- stamen.map +
+* geom_path(data = cps,
+            aes(long, lat, 
+                group = transect),
+            colour = "red") +
+* geom_point(data = filter(cps, nasc &gt; 0),
+             aes(long, lat, 
+                 size = nasc, 
+*                colour = nasc)) +
+* guides(colour = guide_legend(),
+*        size = guide_legend())
+  
+
+# Plot map
+cps.prelim
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot7-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+## Map Server APIs: `ggmap`
+Add some more info to the map (obviously not "good" maps) using `ggrepel` and `shadowtext`
+
+.left-code[
+
+```r
+# Add repelled labels
+cps.final1 &lt;- cps.prelim +
+* ggrepel::geom_text_repel(
+    data = filter(locs, group == "city"),
+    aes(long, lat, label = name)) +
+  theme(legend.position = "none")
+
+# Add masked labels
+cps.final2 &lt;- cps.prelim +
+* shadowtext::geom_shadowtext(
+    data = filter(locs, group == "city"),
+    aes(long, lat, label = name),
+    colour = "blue",
+*   bg.colour = "yellow") +
+  theme(legend.position = "none")
+
+# Arrange and plot maps
+cowplot::plot_grid(cps.final1, 
+                   cps.final2, 
+                   nrow = 1)
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot8-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+class: center, middle
+
+# Static maps: Roll-your-own
+
+## `ggplot2`, `sf`, and helpers (`gg*`)
+
+---
+
+## Geographic data packages: `rnaturalearth`
+Acquiring good land feature data is often a challenge. `rnaturalearth` is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and resolutions ("low", "medium", "high"; high requires installation of `rnaturalearthhires`).
+
+Import data as spatial (`sp`) or simple feature (`sf`) object (we'll choose `sf`, always).
+
+.left-code[
+
+```r
+# Download worldwide countries 
+# at medium resolution
+world &lt;- ne_countries(
+  scale = "medium", 
+* returnclass = "sf")
+
+# Plot result
+ggplot(data = world) +
+  geom_sf() +
+  theme_bw()
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot9-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## Geographic data packages: `rnaturalearth`
+
+View the contents of the `world` data set.
+
+Also check out `ne_states()` for state-level polygon data and `ne_coastlines()` for world coastline (polyline) data.
+
+
+```r
+# Show world attributes
+head(world, 5)
+```
+
+```
+## Simple feature collection with 5 features and 94 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -73.36621 ymin: -22.40205 xmax: 109.4449 ymax: 23.34521
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+##        featurecla scalerank labelrank sovereignt sov_a3 adm0_dif level
+## 0 Admin-0 country         1         3   Zimbabwe    ZWE        0     2
+## 1 Admin-0 country         1         3     Zambia    ZMB        0     2
+## 2 Admin-0 country         1         3      Yemen    YEM        0     2
+## 3 Admin-0 country         3         2    Vietnam    VNM        0     2
+## 4 Admin-0 country         5         3  Venezuela    VEN        0     2
+##                type     admin adm0_a3 geou_dif   geounit gu_a3 su_dif
+## 0 Sovereign country  Zimbabwe     ZWE        0  Zimbabwe   ZWE      0
+## 1 Sovereign country    Zambia     ZMB        0    Zambia   ZMB      0
+## 2 Sovereign country     Yemen     YEM        0     Yemen   YEM      0
+## 3 Sovereign country   Vietnam     VNM        0   Vietnam   VNM      0
+## 4 Sovereign country Venezuela     VEN        0 Venezuela   VEN      0
+##     subunit su_a3 brk_diff      name name_long brk_a3  brk_name brk_group
+## 0  Zimbabwe   ZWE        0  Zimbabwe  Zimbabwe    ZWE  Zimbabwe      &lt;NA&gt;
+## 1    Zambia   ZMB        0    Zambia    Zambia    ZMB    Zambia      &lt;NA&gt;
+## 2     Yemen   YEM        0     Yemen     Yemen    YEM     Yemen      &lt;NA&gt;
+## 3   Vietnam   VNM        0   Vietnam   Vietnam    VNM   Vietnam      &lt;NA&gt;
+## 4 Venezuela   VEN        0 Venezuela Venezuela    VEN Venezuela      &lt;NA&gt;
+##   abbrev postal                        formal_en
+## 0  Zimb.     ZW             Republic of Zimbabwe
+## 1 Zambia     ZM               Republic of Zambia
+## 2   Yem.     YE                Republic of Yemen
+## 3  Viet.     VN    Socialist Republic of Vietnam
+## 4   Ven.     VE Bolivarian Republic of Venezuela
+##                            formal_fr name_ciawf note_adm0 note_brk
+## 0                               &lt;NA&gt;   Zimbabwe      &lt;NA&gt;     &lt;NA&gt;
+## 1                               &lt;NA&gt;     Zambia      &lt;NA&gt;     &lt;NA&gt;
+## 2                               &lt;NA&gt;      Yemen      &lt;NA&gt;     &lt;NA&gt;
+## 3                               &lt;NA&gt;    Vietnam      &lt;NA&gt;     &lt;NA&gt;
+## 4 República Bolivariana de Venezuela  Venezuela      &lt;NA&gt;     &lt;NA&gt;
+##       name_sort name_alt mapcolor7 mapcolor8 mapcolor9 mapcolor13  pop_est
+## 0      Zimbabwe     &lt;NA&gt;         1         5         3          9 13805084
+## 1        Zambia     &lt;NA&gt;         5         8         5         13 15972000
+## 2   Yemen, Rep.     &lt;NA&gt;         5         3         3         11 28036829
+## 3       Vietnam     &lt;NA&gt;         5         6         5          4 96160163
+## 4 Venezuela, RB     &lt;NA&gt;         1         3         1          4 31304016
+##   pop_rank gdp_md_est pop_year lastcensus gdp_year
+## 0       14      28330     2017       2002     2016
+## 1       14      65170     2017       2010     2016
+## 2       15      73450     2017       2004     2016
+## 3       16     594900     2017       2009     2016
+## 4       15     468600     2017       2001     2016
+##                     economy             income_grp wikipedia fips_10_
+## 0   5. Emerging region: G20          5. Low income        NA       ZI
+## 1 7. Least developed region 4. Lower middle income        NA       ZA
+## 2 7. Least developed region 4. Lower middle income        NA       YM
+## 3   5. Emerging region: G20 4. Lower middle income        NA       VM
+## 4   5. Emerging region: G20 3. Upper middle income        NA       VE
+##   iso_a2 iso_a3 iso_a3_eh iso_n3 un_a3 wb_a2 wb_a3   woe_id woe_id_eh
+## 0     ZW    ZWE       ZWE    716   716    ZW   ZWE 23425004  23425004
+## 1     ZM    ZMB       ZMB    894   894    ZM   ZMB 23425003  23425003
+## 2     YE    YEM       YEM    887   887    RY   YEM 23425002  23425002
+## 3     VN    VNM       VNM    704   704    VN   VNM 23424984  23424984
+## 4     VE    VEN       VEN    862   862    VE   VEN 23424982  23424982
+##                     woe_note adm0_a3_is adm0_a3_us adm0_a3_un adm0_a3_wb
+## 0 Exact WOE match as country        ZWE        ZWE         NA         NA
+## 1 Exact WOE match as country        ZMB        ZMB         NA         NA
+## 2 Exact WOE match as country        YEM        YEM         NA         NA
+## 3 Exact WOE match as country        VNM        VNM         NA         NA
+## 4 Exact WOE match as country        VEN        VEN         NA         NA
+##       continent region_un          subregion                  region_wb
+## 0        Africa    Africa     Eastern Africa         Sub-Saharan Africa
+## 1        Africa    Africa     Eastern Africa         Sub-Saharan Africa
+## 2          Asia      Asia       Western Asia Middle East &amp; North Africa
+## 3          Asia      Asia South-Eastern Asia        East Asia &amp; Pacific
+## 4 South America  Americas      South America  Latin America &amp; Caribbean
+##   name_len long_len abbrev_len tiny homepart min_zoom min_label max_label
+## 0        8        8          5   NA        1        0         3       8.0
+## 1        6        6          6   NA        1        0         3       8.0
+## 2        5        5          4   NA        1        0         3       8.0
+## 3        7        7          5    2        1        0         2       7.0
+## 4        9        9          4   NA        1        0         3       7.5
+##        ne_id wikidataid name_ar name_bn   name_de   name_en   name_es
+## 0 1159321441       Q954    &lt;NA&gt;    &lt;NA&gt;  Simbabwe  Zimbabwe  Zimbabue
+## 1 1159321439       Q953    &lt;NA&gt;    &lt;NA&gt;    Sambia    Zambia    Zambia
+## 2 1159321425       Q805    &lt;NA&gt;    &lt;NA&gt;     Jemen     Yemen     Yemen
+## 3 1159321417       Q881    &lt;NA&gt;    &lt;NA&gt;   Vietnam   Vietnam   Vietnam
+## 4 1159321411       Q717    &lt;NA&gt;    &lt;NA&gt; Venezuela Venezuela Venezuela
+##     name_fr name_el name_hi   name_hu   name_id   name_it name_ja name_ko
+## 0  Zimbabwe    &lt;NA&gt;    &lt;NA&gt;  Zimbabwe  Zimbabwe  Zimbabwe    &lt;NA&gt;    &lt;NA&gt;
+## 1    Zambie    &lt;NA&gt;    &lt;NA&gt;    Zambia    Zambia    Zambia    &lt;NA&gt;    &lt;NA&gt;
+## 2     Yémen    &lt;NA&gt;    &lt;NA&gt;     Jemen     Yaman     Yemen    &lt;NA&gt;    &lt;NA&gt;
+## 3  Viêt Nam    &lt;NA&gt;    &lt;NA&gt;   Vietnám   Vietnam   Vietnam    &lt;NA&gt;    &lt;NA&gt;
+## 4 Venezuela    &lt;NA&gt;    &lt;NA&gt; Venezuela Venezuela Venezuela    &lt;NA&gt;    &lt;NA&gt;
+##     name_nl   name_pl   name_pt name_ru   name_sv   name_tr   name_vi
+## 0  Zimbabwe  Zimbabwe  Zimbábue    &lt;NA&gt;  Zimbabwe  Zimbabve  Zimbabwe
+## 1    Zambia    Zambia    Zâmbia    &lt;NA&gt;    Zambia   Zambiya    Zambia
+## 2     Jemen     Jemen     Iémen    &lt;NA&gt;     Jemen     Yemen     Yemen
+## 3   Vietnam   Wietnam  Vietname    &lt;NA&gt;   Vietnam   Vietnam      &lt;NA&gt;
+## 4 Venezuela Wenezuela Venezuela    &lt;NA&gt; Venezuela Venezuela Venezuela
+##   name_zh                       geometry
+## 0    &lt;NA&gt; MULTIPOLYGON (((31.28789 -2...
+## 1    &lt;NA&gt; MULTIPOLYGON (((30.39609 -1...
+## 2    &lt;NA&gt; MULTIPOLYGON (((53.08564 16...
+## 3    &lt;NA&gt; MULTIPOLYGON (((104.064 10....
+## 4    &lt;NA&gt; MULTIPOLYGON (((-60.82119 9...
+```
+
+---
+
+## Geographic data packages: Others
+
+- **marmap** Import, Plot and analyze bathymetric and topographic data ()GEBCO)
+
+- **elevatr:** Access elevation data from various APIs (Amazon Web Svcs, USGS)
+
+- **getlandsat:**	Provides access to Landsat 8 data
+
+- **osmdata:** Download and import of OpenStreetMap data
+
+- **raster:**	`getData()` imports administrative, elevation, WorldClim data
+
+- **rnoaa:**	National Oceanic and Atmospheric Administration (NOAA) climate data
+
+- **rWBclimate:**	Access World Bank climate data.
+
+---
+
+## Geographic Data File Input/Output (I/O)
+
+You can also import shapefiles, etc. stored locally using `st_read()`
+
+
+```r
+eez &lt;- st_read(here("Data/GIS/eez_us.shp"))
+```
+
+```
+## Reading layer `eez_us' from data source `C:\PROJECTS\PSAWII-Mapping\Data\GIS\eez_us.shp' using driver `ESRI Shapefile'
+## Simple feature collection with 1 feature and 23 fields
+## geometry type:  POLYGON
+## dimension:      XY
+## bbox:           xmin: -129.2348 ymin: 30.542 xmax: -117.0916 ymax: 49.09159
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +ellps=WGS84 +no_defs
+```
+
+Or, write them to disk using `st_write()`
+
+
+```r
+# sSet delete_layer = T to overwrite existing files
+eez.out &lt;- st_write(eez, here("Data/GIS/eez_us_COPY.shp"), delete_layer = T)
+```
+
+--
+
+But the `GDAL` backend used by `st_write()` provides access to more than 200 vector and raster data formats, including: KML, GPX, GeoJSON, GeoTIFF, SQLite, and more.
+
+---
+
+background-image: url(images/geometries.png)
+background-size: 500px
+background-position: 50% 90%
+
+## What are [simple features](https://r-spatial.github.io/sf/articles/sf1.html) (a brief tangent)?
+
+- A simple feature is essentially a data frame with explicit spatial attributes (e.g., fixes from a GPS with latitude/longitude coordinates in of the WGS84 datum)
+
+- A simple feature has both **spatial** and **non-spatial** attributes. Spatial attributes are geometry valued, and simple features are based on 2D geometry with linear interpolation between vertices.
+
+- Simple features in R are the equivalent of a shapefile in GIS, but self-contained (i.e., single object)
+
+---
+
+## Simple features: Attributes
+- geometry type: POINT, POLYLINE POLYGON, etc.
+- epsg: Coordinate Reference System (CRS, datum and projection; more later) 
+- proj4string: Notation used by R from the PROJ.4 `gdal` library
+
+
+```r
+# Subset world data
+world %&gt;% 
+  filter(name %in% c("Canada", "Mexico", "United States of America")) %&gt;%
+  select("name", "pop_est", "gdp_md_est") %&gt;% 
+  arrange(name)
+```
+
+```
+## Simple feature collection with 3 features and 3 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: -178.1945 ymin: 14.54541 xmax: 179.78 ymax: 83.11611
+## epsg (SRID):    4326
+## proj4string:    +proj=longlat +datum=WGS84 +no_defs
+##                       name   pop_est gdp_md_est
+## 1                   Canada  35623680    1674000
+## 2                   Mexico 124574795    2307000
+## 3 United States of America 326625791   18560000
+##                         geometry
+## 1 MULTIPOLYGON (((-132.6555 5...
+## 2 MULTIPOLYGON (((-117.1283 3...
+## 3 MULTIPOLYGON (((-132.7469 5...
+```
+
+---
+## Simple features: Methods
+Buffer (`st_buffer`), spatial subsetting (`st_intersection`, `st_difference`), casting (`st_cast`), geometric measurements (`st_area`, `st_length`)
+
+
+```r
+methods(class = "sf")
+```
+
+```
+##  [1] $&lt;-                   [                     [[&lt;-                 
+##  [4] aggregate             anti_join             arrange              
+##  [7] as.data.frame         cbind                 coerce               
+## [10] dbDataType            dbWriteTable          df_spatial           
+## [13] distinct              filter                full_join            
+## [16] gather                group_by              identify             
+## [19] initialize            inner_join            left_join            
+## [22] mapView               merge                 mutate               
+## [25] nest                  plot                  print                
+## [28] rbind                 rename                right_join           
+## [31] sample_frac           sample_n              select               
+## [34] semi_join             separate              show                 
+## [37] slice                 slotsFromS3           spread               
+## [40] st_agr                st_agr&lt;-              st_area              
+## [43] st_as_sf              st_bbox               st_boundary          
+## [46] st_buffer             st_cast               st_centroid          
+## [49] st_collection_extract st_convex_hull        st_coordinates       
+## [52] st_crop               st_crs                st_crs&lt;-             
+## [55] st_difference         st_geometry           st_geometry&lt;-        
+## [58] st_intersection       st_is                 st_line_merge        
+## [61] st_nearest_points     st_node               st_point_on_surface  
+## [64] st_polygonize         st_precision          st_segmentize        
+## [67] st_set_precision      st_simplify           st_snap              
+## [70] st_sym_difference     st_transform          st_triangulate       
+## [73] st_union              st_voronoi            st_wrap_dateline     
+## [76] st_write              st_zm                 summarise            
+## [79] transmute             ungroup               unite                
+## [82] unnest               
+## see '?methods' for accessing help and source code
+```
+
+
+---
+## Land Feature Data (`rnaturalearth`)
+
+
+```r
+ggplot(data = world) +
+  # Symbolize polygons by continent
+* geom_sf(aes(fill = continent)) +
+  theme_bw()
+```
+
+&lt;img src="01-Introduction-Slides_files/figure-html/plot10-output-1.png" width="648" height="100%" style="display: block; margin: auto;" /&gt;
+
+---
+## A-T Survey: Land data
+
+.left-code[
+
+```r
+# Download worldwide states 
+# and filter for Western N. Am.
+*states &lt;- ne_states(
+  country = c("Canada",
+              "United States of America",
+              "Mexico"),
+  returnclass = 'sf') %&gt;% 
+  filter(name %in% c("California","Oregon",
+                     "Washington","Nevada",
+                     "British Columbia",
+                     "Baja California",
+                     "Baja California Sur"))
+
+# Plot result
+ggplot(data = states) +
+  geom_sf() + 
+* geom_point(data = cps,
+*            aes(long, lat)) +
+  theme_bw()
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot11-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+## A-T Survey: Base map
+
+.left-code[
+
+```r
+# Place labels
+locs.sub &lt;- locs %&gt;% 
+  filter(name %in% c("Cape Flattery","Columbia River",
+                     "Cape Mendocino","Point Conception"))
+
+# Create base map
+base.map &lt;- ggplot() +
+  geom_sf(data = states) +
+  geom_shadowtext(data = locs.sub,
+                  aes(long, lat, label = name),
+                  colour = "black", 
+                  bg.colour = "white",
+                  hjust = 0, angle = 45) +
+  xlab("Longitude") +
+  ylab("Latitude") + 
+  annotation_scale(location = "bl", 
+                   width_hint = 0.5) +
+  coord_sf(xlim = wc.long,
+           ylim = wc.lat) +
+  theme_bw()
+
+base.map
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot12-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+## A-T Survey: Add data layers
+
+.left-code[
+
+```r
+# Create base map
+base.map + 
+  geom_path(data = cps,
+            aes(long, lat,
+                group = transect),
+            colour = "gray50") +
+  geom_point(data = filter(cps, nasc &gt; 0),
+            aes(long, lat,
+                size = nasc,
+                colour = nasc)) +
+* scale_colour_viridis(option = "inferno") +
+  guides(colour = guide_legend(), 
+         size = guide_legend()) +
+* theme(legend.position = c(0.05,0.05),
+*       legend.justification = c(0,0)) +
+* ggtitle("CPS Backscatter")
+```
+]
+
+.right-plot[
+&lt;img src="01-Introduction-Slides_files/figure-html/plot13-output-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+]
+
+---
+
+background-image: url(figs/basic-map-example.png)
+background-size: 300px
+background-position: 100% 50%
+
+## A-T Survey: Save using `ggsave()`
+
+.pull-left[
+
+```r
+# File type dictated by
+# extension (e.g., .jpg, .png, .pdf) 
+ggsave(here("Slides/figs/basic-map-example.png"),
+       height = 10,
+       width = 5)
+```
+]
+
+---
+
+## Faceting
+Easily create multipanel figures using ggplot on factors (i.e., groups). I'm using the `case_when()` function to assign the data to 3 groups base on latitude, which will be used to create the facets. 
+
+
+```r
+# Classify data by latitude
+cps &lt;- cps %&gt;% 
+  mutate(
+*   stock = case_when(
+      lat &gt; 45 ~ "North",
+      between(lat, 43, 45) ~ "Central",
+      TRUE ~ "South"))
+
+# View top 5 rows
+head(cps, 5)
+```
+
+```
+## # A tibble: 5 x 6
+##   transect interval  long   lat  nasc stock
+##      &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;chr&gt;
+## 1        1        1 -121.  35.4     0 South
+## 2        1        2 -121.  35.4     0 South
+## 3        1        3 -121.  35.4     0 South
+## 4        1        4 -121.  35.4     0 South
+## 5        1        5 -121.  35.4     0 South
+```
+
+---
+
+## A-T Survey: Faceted maps
+The functions `facet_wrap()` and `facet_grid()` create multi-panel figures using one or two variables, respectively.
+
+
+```r
+# Plot CPS backscatter by "stock"
+base.map + 
+  geom_point(data = cps,
+             aes(long, lat, colour = stock)) +
+* facet_wrap(~stock, nrow = 1) +
+  scale_colour_discrete("Stock")
+```
+
+&lt;img src="01-Introduction-Slides_files/figure-html/unnamed-chunk-9-1.png" width="468" height="100%" style="display: block; margin: auto;" /&gt;
+
+```r
+ggsave(here("Slides/figs/facet-map.png"),
+       height = 10, width = 5*3)
+```
+
+---
+
+background-image: url(figs/facet-map.png)
+background-size: 900px
+background-position: 50% 50%
+    </textarea>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function() {
+  var d = document, s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})();</script>
+
+<script>
+(function() {
+  var i, text, code, codes = document.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+})();
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

@@ -118,7 +118,7 @@ What's wrong with it?
 
 ---
 
-## Let's make a (slightly better) map
+## Let's make a map with `ggplot2`
 
 The same **VERY** basic map using **ggplot2** (still `r emo::ji("sick")`)
 
@@ -165,7 +165,7 @@ ggplot(cps, aes(long, lat)) +
 
 ---
 
-## Let's make a better (barely acceptable) map
+## Let's make a (slightly) better map
 
 The same map with some place names added (`r emo::ji("meh")`)
 
@@ -198,7 +198,7 @@ ggplot(cps, aes(long, lat)) +
 
 ---
 
-## OK, one more (mostly) terrible map
+## OK, one more better but (mostly) terrible map
 
 The same map with fewer place names, scaled points, and an equal area projection (`r emo::ji("meh")`)
 
@@ -285,7 +285,8 @@ Add the CPS transects to the stamen map
 cps.prelim <- stamen.map +
   geom_path(data = cps, #<<
             aes(long, lat, 
-                group = transect)) +
+                group = transect),
+            colour = "red") +
   geom_point(data = filter(cps, nasc > 0), #<<
              aes(long, lat, 
                  size = nasc, 
@@ -349,7 +350,7 @@ class: center, middle
 ---
 
 ## Geographic data packages: `rnaturalearth`
-Acquiring good land feature data is often a challenge. `rnaturalearth` is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and scales ("low", "medium", "high"; high requires installation of `rnaturalearthhires`).
+Acquiring good land feature data is often a challenge. `rnaturalearth` is a wonderful package for easily importing land data at a variety of levels (continent, country, state, county) and resolutions ("low", "medium", "high"; high requires installation of `rnaturalearthhires`).
 
 Import data as spatial (`sp`) or simple feature (`sf`) object (we'll choose `sf`, always).
 
@@ -372,6 +373,19 @@ ggplot(data = world) +
 ```{r plot9-output,ref.label="plot9-code",echo=F}
 ``` 
 ]
+
+---
+
+## Geographic data packages: `rnaturalearth`
+
+View the contents of the `world` data set.
+
+Also check out `ne_states()` for state-level polygon data and `ne_coastlines()` for world coastline (polyline) data.
+
+```{r}
+# Show world attributes
+head(world, 5)
+```
 
 ---
 
@@ -407,6 +421,8 @@ Or, write them to disk using `st_write()`
 # sSet delete_layer = T to overwrite existing files
 eez.out <- st_write(eez, here("Data/GIS/eez_us_COPY.shp"), delete_layer = T)
 ```
+
+--
 
 But the `GDAL` backend used by `st_write()` provides access to more than 200 vector and raster data formats, including: KML, GPX, GeoJSON, GeoTIFF, SQLite, and more.
 
