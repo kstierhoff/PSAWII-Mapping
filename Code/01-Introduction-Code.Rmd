@@ -46,7 +46,7 @@ head(cps, 5)
 ```{r}
 # Plot lat/long
 ggplot(cps, aes(long, lat)) +
-  geom_point()
+  geom_point() 
 ```
 
 # Refine the map slightly
@@ -134,13 +134,25 @@ base.map <- ggplot() +
   ylab("Latitude") + 
   annotation_scale(location = "bl", 
                    width_hint = 0.5) +
-  coord_sf(xlim = wc.long,
-           ylim = wc.lat) +
+  coord_sf() +
   theme_bw()
 
 base.map
 ```
 
+```{r}
+# Read Elizabeth's data
+cet <- read_csv(here("Data/Pd_Test_R_plot.csv"))
+
+base.map + 
+  geom_point(data = cet,
+             aes(mlon180, mlat, colour = Avg.Dens)) 
+
+ggplot() +
+  geom_point(data = cet,
+             aes(mlon180, mlat, colour = Avg.Dens)) +
+  coord_map()
+```
 
 
 
