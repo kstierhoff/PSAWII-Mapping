@@ -1,14 +1,15 @@
 ---
 title: "Introduction-Basic Mapping"
 author: "Kevin Stierhoff"
-date: '`r format(Sys.time(), format = "%F")`'
+date: '2019-02-10'
 output: 
   bookdown::html_document2:
       toc: yes
       toc_float: yes
 ---
 
-```{r setup, message=F}
+
+```r
 # Install and load pacman (library management package)
 if (!require("pacman")) install.packages("pacman")
 
@@ -32,7 +33,8 @@ knitr::opts_chunk$set(warning = F, message = F,
 - `long` and `lat` are (x,y)
 - `nasc` (Nautical Area Scattering Coefficient) ~ "acoustic biomass"
 
-```{r}
+
+```r
 # Read data file
 cps <- read_csv(here("Data/cps.csv")) %>% 
   select(transect, interval, everything())
@@ -41,17 +43,32 @@ cps <- read_csv(here("Data/cps.csv")) %>%
 head(cps, 5)
 ```
 
+```
+## # A tibble: 5 x 5
+##   transect interval  long   lat  nasc
+##      <dbl>    <dbl> <dbl> <dbl> <dbl>
+## 1        1        1 -121.  35.4     0
+## 2        1        2 -121.  35.4     0
+## 3        1        3 -121.  35.4     0
+## 4        1        4 -121.  35.4     0
+## 5        1        5 -121.  35.4     0
+```
+
 # Visualize the imported data
 
-```{r}
+
+```r
 # Plot lat/long
 ggplot(cps, aes(long, lat)) +
   geom_point()
 ```
 
+<img src="01-Introduction-Code_files/figure-html/unnamed-chunk-2-1.png" width="672" />
+
 # Refine the map slightly
 
-```{r}
+
+```r
 # Plot lat/long
 ggplot(cps, aes(long, lat)) +
   geom_point() +
@@ -64,9 +81,12 @@ ggplot(cps, aes(long, lat)) +
   theme_bw()    #<< 
 ```
 
+<img src="01-Introduction-Code_files/figure-html/unnamed-chunk-3-1.png" width="672" />
+
 # Import some place labels
 
-```{r}
+
+```r
 # Subset locations
 locs <- read_csv( #<<
   here("Data/locations.csv"))
@@ -86,11 +106,14 @@ ggplot(locs) +
   theme_bw() 
 ```
 
+<img src="01-Introduction-Code_files/figure-html/unnamed-chunk-4-1.png" width="672" />
+
 # Import West Coast states from `rnaturalearth`
 
 By downloading `rnaturalearthdata`, map data are available offline!
 
-```{r}
+
+```r
 # Download worldwide states 
 # and filter for Western N. Am.
 states <- ne_states(
@@ -110,9 +133,12 @@ ggplot(data = states) +
   theme_bw()
 ```
 
+<img src="01-Introduction-Code_files/figure-html/unnamed-chunk-5-1.png" width="672" />
+
 # Create a base map
 
-```{r}
+
+```r
 # Place labels
 locs <- locs %>% 
   filter(name %in% c("Cape Flattery","Columbia River",
@@ -140,6 +166,8 @@ base.map <- ggplot() +
 
 base.map
 ```
+
+<img src="01-Introduction-Code_files/figure-html/unnamed-chunk-6-1.png" width="672" />
 
 
 

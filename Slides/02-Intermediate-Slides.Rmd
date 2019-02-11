@@ -21,6 +21,8 @@ if (!require("pacman")) install.packages("pacman")
 pacman::p_load(xaringan,knitr,here,tidyverse,sf,
                rnaturalearth,mapview)
 
+pacman::p_load_gh("Nowosad/spDataLarge")
+
 options(htmltools.dir.version = FALSE)
 knitr::opts_chunk$set(message = F, fig.align = 'center',
                       fig.dim = c(6.5, 6.1), fig.retina = 2, 
@@ -40,7 +42,7 @@ theme_set(theme_bw())
 ```
 
 ## What are the advantages of working with spatial data?
-- As with any other GIS, you can plot data with different CRS on the same plot
+- As with any other GIS, you can plot data with different Coordinate Reference Systems (CRS) on the same plot
 
 - The GIS does the projection on the fly and locates points/lines/polygons in the correct<sup>*</sup> space
 
@@ -61,11 +63,11 @@ background-image: url(images/raster-vector.jpg)
 background-size: 500px
 background-position: 90% 50%
 
-## **Vector** vs. **Raster** data?
+## Spatial data: **Vector** vs. **Raster**
 .pull-left[
 From Lovelace et al. _Geocomputation with R_:  
 
-- The geographic **vector** model is based on points located within a coordinate reference system (CRS). Points can represent self-standing features (e.g., the location of a bus stop) or they can be linked together to form more complex geometries such as lines and polygons. 
+- The geographic **vector** model is based on points located within a **coordinate reference system (CRS)**. Points can represent self-standing features (e.g., the location of a bus stop) or they can be linked together to form more complex geometries such as lines and polygons. 
 
 - In contrast, **raster** data are made up of pixels (also referred to as grid cells). They are usually regularly-spaced and square but they don’t have to be. Rasters often look pixelated because each pixel has its own value or class.
   - **Discrete:** have distinct themes or categories. For example, one grid cell represents a land cover class or a soil type.
@@ -73,17 +75,77 @@ From Lovelace et al. _Geocomputation with R_:
 ]
 
 ---
+## What are Coordinate Reference Systems (CRS)
+Lovelace et al. _Geocomputation with R_ ([link](https://geocompr.robinlovelace.net/spatial-class.html#crs-intro))
+
+CRSs define how the spatial elements of the data relate to the surface of the Earth (or other bodies). CRSs are either geographic or projected:
+
+> **Geographic coordinate systems** identify any location on the Earth’s surface using two values — **longitude and latitude**. Longitude is location in the East-West direction in angular distance from the Prime Meridian plane. Latitude is angular distance North or South of the equatorial plane. Distances in geographic CRSs are therefore not measured in meters, but e.g., in degrees.
+
+> **Projected CRSs** are based on Cartesian coordinates on an implicitly flat surface. They have an origin, x and y axes, and a linear unit of measurement such as meters. All projected CRSs are based on a geographic CRS, described in the previous section, and rely on map projections to convert the three-dimensional surface of the Earth into **Easting and Northing (x and y)** values in a projected CRS.
+
+
+---
+
+## Coordinate Reference Systems (CRS)
+**Viewing CRS options in R:**  
+Other than searching for EPSG codes online, another quick way to find out about available CRSs is via the `rgdal::make_EPSG()` function, which outputs a data frame of available projections:
+
+```{r}
+# Get CRS options from rgdal
+crs_data = rgdal::make_EPSG()
+
+# Print table
+# filter(crs_data, str_detect(note,"Albers"))
+filter(crs_data, code %in% c(4326, 3310)) %>% select(-prj4)
+```
+
+**Viewing CRS options online:**
+- **[epsg.io](https://epsg.io/)**
+
+- **[http://spatialreference.org](http://spatialreference.org/ref/epsg/)**
+
+---
+
+## Viewing and Setting CRS: Zion N.P. data
+
+```{r}
+# Read Zion data set from the spDataLarge package
+zion_filepath = system.file("vector/zion.gpkg", package = "spDataLarge")
+zion = st_read(zion_filepath)
+```
+
+--
+   
+```{r}
+# View CRS data
+st_crs(zion)
+```
+
+--
+
+```{r}
+# Set CRS to geographic WGS84
+st_set_crs(zion, 4326)
+```
+
+---
+class: center, middle
+
+# The `sf` package for spatial data analysis
+
+---
 
 ## Why use `sf` instead of `sp` for vector data?
 Some of you may be familiar with the `sp` package and `Spatial*DataFrames`.
 
-From Lovelace et al. _Geocomputation with R_: 
+From Lovelace et al. _Geocomputation with R_ ([link](https://geocompr.robinlovelace.net/spatial-class.html#why-simple-features)): 
 
-**`sf`** is a package providing a class system for geographic vector data. Not only does **`sf`** supersede **`sp`**, it also provides a consistent command-line interface to **`GEOS`** (Geometry Engine - Open Source C++ library) and **`GDAL`** (Geospatial Data Abstraction Library), superseding **`rgeos`** and **`rgdal`**.
+>**`sf`** is a package providing a class system for geographic vector data. Not only does **`sf`** supersede **`sp`**, it also provides a consistent command-line interface to **`GEOS`** (Geometry Engine - Open Source C++ library) and **`GDAL`** (Geospatial Data Abstraction Library), superseding **`rgeos`** and **`rgdal`**.
 
-Simple features is an open standard developed and endorsed by the not-for-profit Open Geospatial Consortium (OGC). 
+>Simple features is an open standard developed and endorsed by the not-for-profit Open Geospatial Consortium (OGC). 
 
-Simple Features is a hierarchical data model that represents a wide range of geometry types. Of 17 geometry types supported by the specification, only 7 are used in the vast majority of geographic research; these core geometry types are fully supported by the **`sf`**.  
+>Simple Features is a hierarchical data model that represents a wide range of geometry types. Of 17 geometry types supported by the specification, only 7 are used in the vast majority of geographic research; these core geometry types are fully supported by the **`sf`**.  
 
 **Spatial objects can be readily converted between `sf` and `sp` format.**
 
@@ -96,25 +158,46 @@ sp.to.sf <- st_as_sf(sp)
 ```
 
 ---
+## Why use `sf` instead of `sp` for vector data?
 
-## Spatial data objects: `sf`  
+More from Lovelace et al. _Geocomputation with R_ ([link](https://geocompr.robinlovelace.net/spatial-class.html#why-simple-features)): 
 
+>Simple features is a widely supported data model that underlies data structures in many GIS applications including QGIS and PostGIS. A major advantage of this is that using the data model ensures your work is cross-transferable to other set-ups, for example importing from and exporting to spatial databases.
+
+>A more specific question from an R perspective is **“why use the `sf` package when `sp` is already tried and tested”?** There are many reasons (linked to the advantages of the simple features model) including:
+
+>- Fast reading and writing of data.
+>- Enhanced plotting performance.
+>- `sf` objects can be treated as data frames in most operations.
+>- `sf` functions can be combined using `%>%` operator and works well with the tidyverse collection of R packages.
+>- `sf` function names are relatively consistent and intuitive (all begin with `st_`).
+
+I'd add that the introduction of `ggplot2::geom_sf()` is another **huge** advantage to `sf`.  
+
+**However, I've noted that `geom_sf()` is quite slow for large data sets, but I understand that major performance improvements are on the way.**
+
+---
+
+## Spatial data objects using `sf`  
 - The `sf` package is all you really need to create, transform, read, and write spatial data files
 
 - Most functions take the name `st_*()`
 
   - `st_read()` and `st_write()` to read and write shapefiles
-  - `st_as_sf(coords = ("",""), crs = "")` to create sf object from data frame
+  - `st_as_sf(coords = ("X","Y"), crs = "")` to create sf object from data frame
   - `st_transform()` to convert between coordinate reference systems (CRS)
   - `st_bbox()` to get the bounding box of a spatial data set
 
-- The `tidyverse` packages (e.g., `dplyr`) work wonderfully with `sf` objects
+- The `tidyverse` packages (e.g., `dplyr`) work seamlessly with `sf` objects
 
   - `filter()` and `select()` to subset rows and columns, respectively
   - `mutate()` to create new variables
   - `left_join()`, `right_join()`, `inner_join()`, etc. for merging with other data
+  - Supports tidy data analysis workflow using the pipe operator (e.g., `%>%`)  
+  
+--
 
-We'll look at these in more depth throughout this section
+**Since `sf` objects are essentially data frames plus a geometry column, the methods/functions you already know for filtering, selecting columns, combining, merging/joining work just the same.**
 
 ---
 
@@ -145,7 +228,7 @@ cps
 --
 
 .pull-right[
-Convert data frame to `sf` using `st_as_sf()`
+Convert `cps` to `sf` using `st_as_sf()`
 
 ```{r}
 # Define coordinates and CRS
@@ -221,9 +304,14 @@ cps.sf %>%
 Perhaps if you'd like to write to a CSV, which doesn't support list-columns?
 
 ---
+class: center, middle
 
-## Viewing `sf` objects: `base::print`
-`sf` objects have their own print methods, so you can have a visual summary using `print()`
+# Viewing `sf` class objects
+
+---
+
+## Viewing `sf` objects: `base::plot`
+`sf` objects have their own plot methods, so you can summarize visually using `plot()`
 
 .pull-left[
 ```{r}
@@ -250,6 +338,7 @@ plot(usa["region_sub"])
 ---
 
 ## Viewing `sf` objects: `ggplot2`
+
 Since `ggplot2` version 3.1, `sf` support by `geom_sf`
 
 ```{r,fig.dim = c(7, 5)}
@@ -262,6 +351,7 @@ ggplot(usa) +
 ---
 
 ## Viewing `sf` objects: `ggplot2`
+
 The magic of `coord_sf()` and projections
 
 ```{r,fig.dim = c(7, 5)}
@@ -270,7 +360,7 @@ laea = st_crs("+proj=laea +lat_0=30 +lon_0=-95") # Lambert equal area
 # Plot using ggplot
 ggplot(usa) + 
   geom_sf(aes(fill = region_sub)) +
-  coord_sf(crs = laea)
+  coord_sf(crs = laea) #<<
 ```
 
 ---
@@ -286,11 +376,72 @@ mapview(usa, zcol = "region_sub")
 
 ---
 
-## Viewing `sf` objects (`mapview`)
+## Viewing A-T transects (`mapview`)
 
-`mapview` is an extremely useful package for viewing spatial data
+Convert `cps` points to lines
 
-```{r,out.width='100%',out.height='50%',eval=F}
+```{r,out.width='100%',out.height='50%'}
+# Cast CPS points to lines
+transects <- st_as_sf(cps, coords = c("long","lat"), crs = 4326) %>% 
+  group_by(transect) %>% summarise(do_union = F) %>% st_cast("LINESTRING")
+
 # View a single object
-mapview(usa)
+mapview(transects)
 ```
+
+---
+class: center, middle
+
+# Manipulating vector data attributes
+
+---
+
+## **Simple features**: Vector attribute manipulation
+
+As mentioned previously, the `sf` class extends the data.frame, and thus most functions used for manipulating data frames also work on `sf` objects. This means that proficiency (_or lack thereof_) with attribute data in `sf` objects equates to proficiency with data frames in R.  
+
+**Subsetting:** 
+**base R** subsetting functions include `[`, `subset()` and `$`. **`dplyr`** subsetting functions include `select()`, `filter()`, and `pull()`. 
+
+**Aggregation:**
+Aggregation operations summarize datasets by a ‘grouping variable’, typically an attribute column, e.g., calculating the number of people per continent based on country-level data (one row per country). `aggregate()` is a generic function which means that it behaves differently depending on its inputs. `summarize()` is the **dplyr** equivalent of `aggregate()`, and usually follows `group_by()`, which specifies the grouping variable.
+
+```{r}
+# Summarize backscatter by transect
+cps %>% group_by(transect) %>% summarise(mean = mean(nasc)) %>% head(5)
+```
+
+---
+
+## **Simple features**: Vector attribute manipulation (cont'd)  
+
+**Joining**  
+Joins combine tables based on a shared ‘key’ variable. **dplyr** has multiple join functions including `left_join()` and `inner_join()`.
+
+**Surprisingly, the `bind_rows()` and `bind_cols()` functions to not work with `sf` objects; the base functions `rbind()` and `cbind()` should be used instead.**
+
+**Variable creation**  
+Using base functions, `sf$Z <- sf$X + sf$Y`. Using **dplyr** functions, `sf %>% mutate(Z = X + Y)`. 
+
+---
+
+## Geometric operations on vector data
+
+**Simplification**
+Reducing the complexity of objects using `st_simplify()`, for small-scale maps and to reduce memory use, etc.
+
+**Centroids**
+Identify the center of geographic objects using `st_centroid`.
+
+**Buffer**
+Create polygons using `st_buffer()` representing the area within a given distance of a geometric feature: regardless of whether the input is a point, line or polygon, the output is a polygon.
+
+---
+
+## Geometric operations on vector data (cont'd)
+
+**Clipping**
+Use `st_intersection()` and `st_difference()` to select or remove areas of overlap between complex (line or polygon) spatial objects.  
+
+**Geometry unions**
+Use `aggregate()` and `dplyr::summarise()` to aggregate and silently dissolve the geometries of touching polygons in the same group.  
