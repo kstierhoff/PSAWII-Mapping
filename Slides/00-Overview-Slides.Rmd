@@ -44,14 +44,14 @@ knitr::opts_chunk$set(echo = F)
 ## Course Motivation
 I had long been frustrated that mapping and other GIS-type tasks were the only part of my analysis and writing workflow that existed outside of R. 
 
-ArcGIS is (IMHO) expensive, cumbersome, and not-necessarily cross-platform. I REALLY wanted an open-source solution.
-
 With my desire to move toward more automated and reproducible workflows, it was imperative for me to learn the tools available to accomplish these same tasks in R.  
 
-This course arose from a brief, 1 h-long R-User Group meeting in 2018, where I presented some things I had learned about mapping and spatial analysis using R (**and from your interest in this workshop!**).  
+ArcGIS is (IMHO) expensive, cumbersome, and not-necessarily cross-platform. I REALLY wanted a free, open-source solution that would work on any of my workstations.
+
+This course arose from a brief, 1 h-long R-User Group meeting in 2018, where I presented some things I had recently learned about mapping and spatial analysis using R (**and from your interest in this workshop!**).  
 
 ### Disclaimer(!):
-I am **NOT** an expert in GIS or R, an expert in spatial analysis, nor a cartographer.
+I am **NOT** an expert in GIS or R, an expert on spatial analysis, nor a cartographer.
 
 I **AM** _pretty_ good with R, have learned a LOT about making maps in R, and am **extremely** enthusiastic about eliminating the need for proprietary, stand-alone GIS software in my reproducible analysis workflow!
 
@@ -70,7 +70,7 @@ File>New Project>Version Control>Git and paste the link above into the Repositor
 ---
 
 ## Guiding Principles
-There are many ways to accomplish mapping and spatial analysis tasks using R (e.g., `sp` package, [`RQGIS` package](https://cran.r-project.org/web/packages/RQGIS/index.html), the [R-ArcGIS Bridge](https://r-arcgis.github.io/)).  
+There are many ways to accomplish mapping and spatial analysis tasks using R (e.g., `sp` package, [`RQGIS` package](https://cran.r-project.org/web/packages/RQGIS/index.html), [`RSAGA` package](https://github.com/r-spatial/RSAGA), the [R-ArcGIS Bridge](https://r-arcgis.github.io/), etc.).  
 
 **However**, I will focus on the prevailing workflows and packages used by the leaders in the R Spatial community, including:
 
@@ -78,7 +78,7 @@ There are many ways to accomplish mapping and spatial analysis tasks using R (e.
 
 + `tidyverse` packages for data manipulation (e.g., `dplyr`) and visualization (e.g., `ggplot2`) 
 
-+ `sf` package for creation, manipulation, and plotting of spatial data 
++ `sf` package for creation, manipulation, and geoprocessing of spatial data 
 
 + `mapview` and `leaflet` for interactive data exploration
 
@@ -114,22 +114,23 @@ There were several concerns:
 
 I hope to provide interactive programming sessions and hands-on time following slide presentations.
 
-**PLEASE, DO NOT BE INTIMIDATED!**  I hope that the material presented will give you some inspiration to learn new tools and workflows as you build both your R and GIS skills. It'll also help when you can play with your own data and solve your own problems.  
-
-Things may move fast...but you'll have the code to peruse more leisurely anytime you'd like.  
+**PLEASE, DO NOT BE INTIMIDATED!**  I hope that the material presented will give you some inspiration to learn new tools and workflows as you build both your R and GIS skills. It'll also help once you can play with your own data and solve your own problems.  
+ 
+Things may move fast...but you'll have the code to peruse more leisurely anytime you'd like. Feel free to reach out with questions or discoveries that you make along the way.  
 
 Just think of all the spare time you'll have to `r emo::ji("surfer")` once you optimize your R-GIS analysis workflow!
 
 ---
 
 ## Course Structure
+
 The class will be structured into several modules:
 
 + **01-Introduction:** Basic mapping and data visualization (50%)
 
-+ **02-Intermediate:** Spatial data manipulation and analysis (35%)
++ **02-Intermediate:** Spatial data manipulation and analysis (45)
 
-+ **03-Advanced:** Interactive maps, animations, and 3D visualization (15%)  
++ **03-Advanced:** Interactive maps, animations, and 3D visualization (5%)  
 
 ---
 
@@ -138,7 +139,7 @@ The class will be structured into several modules:
 
 + Rstudio (v1.1+, v1.1.4 preferred) 
 
-+ Required packages will be installed, loaded, or updated (if necessary) using the `pacman` package. 
++ **Required packages will be installed, loaded, or updated (if necessary) using the `pacman` package.** 
 
 ```{r, echo=T, message=F}
 # Install and load pacman (library management package)
@@ -154,7 +155,7 @@ https://r-spatial.github.io/sf/
 ---
 
 ## Getting Inspiration and Help
-### CRAN Task Views
+### [CRAN Task Views](https://cran.r-project.org/web/views/)
 + [Analysis of Spatial Data](http://cran.stat.ucla.edu/web/views/Spatial.html) 
 
 + [Handling and Analyzing Spatio-Temporal Data](https://cran.r-project.org/web/views/SpatioTemporal.html) 
@@ -162,7 +163,7 @@ https://r-spatial.github.io/sf/
 --
 
 ### Books
-+ [Geocomputation with R](https://geocompr.robinlovelace.net/) eBook by Lovelace, Nowsad, and Muenchow, for the most comprehensive treatment of, well, geocomputation using R
++ **[Geocomputation with R](https://geocompr.robinlovelace.net/)** eBook by Lovelace, Nowsad, and Muenchow, for the most comprehensive treatment of, well, geocomputation using R
 
 + [R for Data Science](https://r4ds.had.co.nz/) eBook by Grolemund and Wickam for a wealth of info on data analysis, relying heavily on Tidyverse packages 
 

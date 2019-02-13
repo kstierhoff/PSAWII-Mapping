@@ -1,6 +1,7 @@
 ---
 title: "Mapping and Spatial Analysis in R!"
 subtitle: "Part 1-Basic Mapping"
+author: "Kevin Stierhoff <br /> <br /> NOAA Fisheries <br /> Southwest Fisheries Science Center"
 date: '`r format(Sys.time(), format = "%F")`'
 output:
   xaringan::moon_reader:
@@ -61,6 +62,7 @@ _"You can see a lot by just looking"_ -Yogi Berra
 _"Amateur-looking maps can undermine your audience’s ability to understand important information and weaken the presentation of a professional data investigation."_  - Lovelace et al. (_Geocomputation with R_)
 
 ---
+
 class: center, middle
 
 # Static maps: Basic data exploration
@@ -75,6 +77,7 @@ Transect data from an acoustic-trawl method (ATM) survey of small coastal pelagi
 ```{r,echo=T}
 # Read data file
 cps <- read_csv(here("Data/cps.csv")) %>% 
+  # Rearrange columns
   select(transect, interval, everything())
 
 # Show first 10 rows
@@ -282,7 +285,7 @@ Add the CPS transects to the stamen map
 .left-code[
 ```{r plot7-code,eval=F}
 # Add transects and CPS backscatter
-cps.prelim <- stamen.map +
+cps.prelim1 <- stamen.map +
   geom_path(data = cps, #<<
             aes(long, lat, 
                 group = transect),
@@ -290,13 +293,17 @@ cps.prelim <- stamen.map +
   geom_point(data = filter(cps, nasc > 0), #<<
              aes(long, lat, 
                  size = nasc, 
-                 colour = nasc)) + #<<
+                 colour = nasc)) 
+
+cps.prelim2 <- cps.prelim1 + 
+  # Combine colour and size scales
   guides(colour = guide_legend(), #<<
          size = guide_legend()) #<<
   
 
 # Plot map
-cps.prelim
+plot_grid(cps.prelim1, cps.prelim2,
+          nrow = 1)
 ```
 ]
 
@@ -307,30 +314,30 @@ cps.prelim
 
 ---
 ## Map Server APIs: `ggmap`
-Add some more info to the map (obviously not "good" maps) using `ggrepel` and `shadowtext`
+Add some place names (obviously not "good" maps) using the `ggrepel` and `shadowtext` packages.
 
 .left-code[
 ```{r plot8-code,eval=F}
 # Add repelled labels
-cps.final1 <- cps.prelim +
+cps.final1 <- cps.prelim1 +
   ggrepel::geom_text_repel( #<<
     data = filter(locs, group == "city"),
     aes(long, lat, label = name)) +
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  ggtitle("Repelled text labels")
 
 # Add masked labels
-cps.final2 <- cps.prelim +
+cps.final2 <- cps.prelim2 +
   shadowtext::geom_shadowtext( #<<
     data = filter(locs, group == "city"),
     aes(long, lat, label = name),
     colour = "blue",
     bg.colour = "yellow") + #<<
-  theme(legend.position = "none")
+  theme(legend.position = "none") +
+  ggtitle("Masked text labels")
 
 # Arrange and plot maps
-cowplot::plot_grid(cps.final1, 
-                   cps.final2, 
-                   nrow = 1)
+cowplot::plot_grid(cps.final1, cps.final2)
 ```
 ]
 
@@ -360,32 +367,18 @@ Import data as spatial (`sp`) or simple feature (`sf`) object (we'll choose `sf`
 # at medium resolution
 world <- ne_countries(
   scale = "medium", 
-  returnclass = "sf") #<<
+  returnclass = "sf") %>% #<<
+  arrange(admin)
 
-# Plot result
-ggplot(data = world) +
-  geom_sf() +
-  theme_bw()
+# Plot by continent
+plot(world["continent"], key.pos = 4)
 ```
 ]
 
 .right-plot[
-```{r plot9-output,ref.label="plot9-code",echo=F}
+```{r plot9-output,ref.label="plot9-code",echo=F,out.height='50%'}
 ``` 
 ]
-
----
-
-## Geographic data packages: `rnaturalearth`
-
-View the contents of the `world` data set.
-
-Also check out `ne_states()` for state-level polygon data and `ne_coastlines()` for world coastline (polyline) data.
-
-```{r}
-# Show world attributes
-head(world, 5)
-```
 
 ---
 
@@ -407,78 +400,116 @@ head(world, 5)
 
 ---
 
-## Geographic Data File Input/Output (I/O)
+## [Simple features](https://r-spatial.github.io/sf/articles/sf1.html)
 
-You can also import shapefiles, etc. stored locally using `st_read()`
+- Features have a **geometry** describing where on Earth the feature is located, and they have **attributes**, which describe other properties (e.g., temperature, soil type, land cover). The geometry of a tree can be the delineation of its crown, of its stem, or the point indicating its centre. Other properties (i.e., attributes) may include its height, color, diameter at breast height at a particular date, and so on.  
 
-```{r}
-eez <- st_read(here("Data/GIS/eez_us.shp"))
-```
+- The standard says: _"A **simple feature** is defined by the OpenGIS Abstract specification to have both spatial and non-spatial attributes. Spatial attributes are geometry valued, and simple features are based on 2D geometry with linear interpolation between vertices."_  
 
-Or, write them to disk using `st_write()`
-
-```{r,eval=F}
-# sSet delete_layer = T to overwrite existing files
-eez.out <- st_write(eez, here("Data/GIS/eez_us_COPY.shp"), delete_layer = T)
-```
-
---
-
-But the `GDAL` backend used by `st_write()` provides access to more than 200 vector and raster data formats, including: KML, GPX, GeoJSON, GeoTIFF, SQLite, and more.
-
----
-
-background-image: url(images/geometries.png)
-background-size: 500px
-background-position: 50% 90%
-
-## What are [simple features](https://r-spatial.github.io/sf/articles/sf1.html) (a brief tangent)?
-
-- A simple feature is essentially a data frame with explicit spatial attributes (e.g., fixes from a GPS with latitude/longitude coordinates in of the WGS84 datum)
-
-- A simple feature has both **spatial** and **non-spatial** attributes. Spatial attributes are geometry valued, and simple features are based on 2D geometry with linear interpolation between vertices.
-
-- Simple features in R are the equivalent of a shapefile in GIS, but self-contained (i.e., single object)
+- A simple feature is essentially a data frame with explicit spatial attributes, stored in a list-column typically (but not always) named **`geometry`**. Simple features in R are the equivalent of a shapefile in GIS, but self-contained (i.e., a single object).
 
 ---
 
 ## Simple features: Attributes
+
 - geometry type: POINT, POLYLINE POLYGON, etc.
 - epsg: Coordinate Reference System (CRS, datum and projection; more later) 
 - proj4string: Notation used by R from the PROJ.4 `gdal` library
 
 ```{r}
-# Subset world data
-world %>% 
-  filter(name %in% c("Canada", "Mexico", "United States of America")) %>%
-  select("name", "pop_est", "gdp_md_est") %>% 
-  arrange(name)
+# Print subset of world data
+print(world[c("name", "pop_est", "gdp_md_est")], n = 3)
+```
+
+- rows are objects
+- columns are attributes
+- **geometry** list-column contains spatial attributes
+
+---
+
+background-image: url(images/geometries.png)
+background-size: 700px
+background-position: 50% 85%
+
+## Simple features: Geometries
+
+- 17 geometries are supported by the class
+- The 7 most common geometries are:
+
+---
+
+## Simple features: Methods
+- Same methods (e.g., `filter()`, `select()`, `left_join()`) work for simple features as for data frames.
+
+- Spatial methods (`methods(class = "sf")`) include the following:
+
+```{r,echo=F}
+str_replace(str_subset(methods(class = "sf"), "st_"), ".sf", "")
 ```
 
 ---
-## Simple features: Methods
-Buffer (`st_buffer`), spatial subsetting (`st_intersection`, `st_difference`), casting (`st_cast`), geometric measurements (`st_area`, `st_length`)
+
+## `rnaturalearth`: States
+
+`ne_states()` for state-level polygon data.
+
+```{r,out.height="100%"}
+# Get US states
+us.states <- ne_states(country = "United States of America",
+          returnclass = "sf") %>% 
+  filter(!name %in% c("Alaska","Hawaii")) 
+
+# Plot US states
+ggplot(us.states) + geom_sf()
+```
+
+---
+
+## `rnaturalearth`: Coastlines
+
+`ne_coastlines()` for world coastline (polyline) data.
+
+```{r,out.height="100%"}
+# Get world coastline
+world.coast <- ne_coastline(returnclass = 'sf') 
+
+# Plot world coastline
+ggplot(world.coast) + geom_sf()
+```
+
+---
+
+## Geographic data: Reading and writing
+
+Perhaps you want to use your own spatial data. Use `st_read()` to import local shapefiles, etc. 
 
 ```{r}
-methods(class = "sf")
+filename <- system.file("shape/nc.shp", package = "sf")
+nc <- st_read(filename)
 ```
 
+Or, write them to disk using `st_write()`
 
----
-## Land Feature Data (`rnaturalearth`)
-
-```{r plot10-code,eval=F}
-ggplot(data = world) +
-  # Symbolize polygons by continent
-  geom_sf(aes(fill = continent)) + #<<
-  theme_bw()
+```{r,eval=F}
+# Set delete_layer = T to overwrite existing files
+st_write(nc, here("Data/GIS/nc.shp"), delete_layer = T)
 ```
 
-```{r plot10-output,ref.label="plot10-code",fig.dim = c(9,6),echo=F}
-``` 
+--
+
+The example here uses a shapefile, but the `GDAL` backend used by `st_read()` provides access to more than 200 vector and raster data formats, including: KML, GPX, GeoJSON, GeoTIFF, SQLite, etc.
 
 ---
-## A-T Survey: Land data
+
+class: center, middle
+
+# Building a Basic Map
+
+## An example using `sf` and `ggplot2`
+
+---
+
+## Create a basemap: Add land boundaries
 
 .left-code[
 ```{r plot11-code,eval=F}
@@ -498,8 +529,9 @@ states <- ne_states( #<<
 # Plot result
 ggplot(data = states) +
   geom_sf() + 
-  geom_point(data = cps, #<<
-             aes(long, lat)) + #<<
+  geom_path(data = cps,
+             aes(long, lat, 
+                 group = transect)) +
   theme_bw()
 ```
 ]
@@ -510,7 +542,7 @@ ggplot(data = states) +
 ]
 
 ---
-## A-T Survey: Base map
+## Create a basemap: Add labels and format area
 
 .left-code[
 ```{r plot12-code,eval=F}
@@ -546,7 +578,9 @@ base.map
 
 ---
 
-## A-T Survey: Add data layers
+## Add data layers
+
+Add transects using `geom_path()` and backscatter using `geom_point()`. Scale the color and size of points by `nasc`.
 
 .left-code[
 ```{r plot13-code,fig.height='8in',eval=F}
@@ -558,8 +592,8 @@ base.map +
             colour = "gray50") +
   geom_point(data = filter(cps, nasc > 0),
             aes(long, lat,
-                size = nasc,
-                colour = nasc)) +
+                size = nasc, #<<
+                colour = nasc)) + #<<
   scale_colour_viridis(option = "inferno") + #<<
   guides(colour = guide_legend(), 
          size = guide_legend()) +
@@ -578,9 +612,9 @@ base.map +
 
 background-image: url(figs/basic-map-example.png)
 background-size: 300px
-background-position: 100% 50%
+background-position: 80% 50%
 
-## A-T Survey: Save using `ggsave()`
+## Save using `ggsave()`
 
 .pull-left[
 ```{r}
@@ -595,7 +629,8 @@ ggsave(here("Slides/figs/basic-map-example.png"),
 ---
 
 ## Faceting
-Easily create multipanel figures using ggplot on factors (i.e., groups). I'm using the `case_when()` function to assign the data to 3 groups base on latitude, which will be used to create the facets. 
+
+One of the greatest strengths of `ggplot2` is the ability to easily create multipanel figures by **faceting** factors (i.e., groups). Use the `case_when()` function to assign the data to 3 groups base on latitude, which will be used to create the facets. 
 
 ```{r}
 # Classify data by latitude
@@ -603,7 +638,7 @@ cps <- cps %>%
   mutate(
     stock = case_when( #<<
       lat > 45 ~ "North",
-      between(lat, 43, 45) ~ "Central",
+      between(lat, 40, 45) ~ "Central",
       TRUE ~ "South"))
 
 # View top 5 rows
@@ -612,20 +647,31 @@ head(cps, 5)
 
 ---
 
-## A-T Survey: Faceted maps
+## Facet backscatter by "stock"
+
 The functions `facet_wrap()` and `facet_grid()` create multi-panel figures using one or two variables, respectively.
 
-```{r,fig.height='6in'}
+.left-code[
+```{r plot14-code,fig.height='8in',eval=F}
 # Plot CPS backscatter by "stock"
 base.map + 
   geom_point(data = cps,
-             aes(long, lat, colour = stock)) +
+             aes(long, lat, 
+                 colour = stock)) +
   facet_wrap(~stock, nrow = 1) + #<<
   scale_colour_discrete("Stock")
 
+# Save output
 ggsave(here("Slides/figs/facet-map.png"),
        height = 10, width = 5*3)
 ```
+]
+
+.right-plot[
+```{r plot14-output,ref.label="plot14-code",echo=F}
+``` 
+]
+
 
 ---
 

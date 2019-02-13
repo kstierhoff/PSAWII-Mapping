@@ -1,6 +1,7 @@
 ---
 title: "Mapping and Spatial Analysis in R!"
 subtitle: "Part 2-Manipulating and Analyzing Spatial Data"
+author: "Kevin Stierhoff <br /> <br /> NOAA Fisheries <br /> Southwest Fisheries Science Center"
 date: '`r format(Sys.time(), format = "%F")`'
 output:
   xaringan::moon_reader:
@@ -50,7 +51,6 @@ theme_set(theme_bw())
   - Computing area over broad geographic range can be quite inaccurate using WGS84
   - Converting to an equal area projection (e.g., Albers) would provide a more accurate result
 
-  
 _(I'm sure there are many other compelling reasons)_
 
 .footnote[
@@ -76,6 +76,8 @@ From Lovelace et al. _Geocomputation with R_:
 
 ---
 ## What are Coordinate Reference Systems (CRS)
+Coordinates can only be placed on the Earth’s surface when their coordinate reference system (CRS) is known; this may be an spheroid CRS such as WGS84, a projected, two-dimensional (Cartesian) CRS such as a UTM zone or Web Mercator, or a CRS in three-dimensions, or including time.  
+
 Lovelace et al. _Geocomputation with R_ ([link](https://geocompr.robinlovelace.net/spatial-class.html#crs-intro))
 
 CRSs define how the spatial elements of the data relate to the surface of the Earth (or other bodies). CRSs are either geographic or projected:
@@ -83,7 +85,6 @@ CRSs define how the spatial elements of the data relate to the surface of the Ea
 > **Geographic coordinate systems** identify any location on the Earth’s surface using two values — **longitude and latitude**. Longitude is location in the East-West direction in angular distance from the Prime Meridian plane. Latitude is angular distance North or South of the equatorial plane. Distances in geographic CRSs are therefore not measured in meters, but e.g., in degrees.
 
 > **Projected CRSs** are based on Cartesian coordinates on an implicitly flat surface. They have an origin, x and y axes, and a linear unit of measurement such as meters. All projected CRSs are based on a geographic CRS, described in the previous section, and rely on map projections to convert the three-dimensional surface of the Earth into **Easting and Northing (x and y)** values in a projected CRS.
-
 
 ---
 

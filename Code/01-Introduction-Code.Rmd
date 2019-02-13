@@ -139,11 +139,14 @@ base.map <- ggplot() +
   ylab("Latitude") + 
   annotation_scale(location = "bl", 
                    width_hint = 0.5) +
-  coord_sf() +
+  coord_sf(xlim = wc.long,
+           ylim = wc.lat) +
   theme_bw()
 
 base.map
 ```
+
+# Plot marine mammal density with CPS
 
 ```{r}
 # Read Elizabeth's data
@@ -161,11 +164,6 @@ base.map +
              aes(long, lat),
              colour = "yellow") +
   facet_wrap(~stock, nrow = 1)
-
-ggplot() +
-  geom_point(data = cet,
-             aes(mlon180, mlat, colour = Avg.Dens)) +
-  coord_map()
 ```
 
 
